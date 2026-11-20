@@ -20,4 +20,6 @@ Aceite SQL equivalente que efetivamente aplique a competência avaliada e respei
 
 ## Verificação após a construção
 
-Confronte as verificações do estado inicial com os testes reais, refine estas notas e anote os caminhos reais em artifacts.yaml. Use a base isolada do grupo; os resultados descritos aqui são esperados, não observados.
+Em `testes/test_vendedores.py`, os quatro testes correspondem aos quatro primeiros critérios: `test_inclusao_persistida`, `test_lista_e_ficha`, `test_edicao_isolada` e `test_exclusao_isolada`. Em `testes/test_relatorios.py`, `test_cliente_e_valor`, `test_vendedor_opcional` e `test_datas_inclusivas` correspondem, respectivamente, aos três critérios restantes. Compare o código entregue com o resultado de cada verificação; a rubrica não atribui nota pelo código de saída do pytest isoladamente.
+
+No estado inicial, as seis funções pendentes nos dois repositórios devem produzir as sete falhas previstas. Na solução, a suíte deve passar sem alterações em testes, esquema ou carga. Execute verificações de banco somente no ambiente de exercícios do grupo. A validação estrutural do contrato não executa essa suíte.
