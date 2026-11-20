@@ -1,0 +1,9 @@
+prerequisites:
+  - knowledge_component: concept:sql.chave-primaria
+    bloom_level: COMPREHENSION
+    description: Distinguir a identidade de um registro de atributos que podem se repetir, como o nome.
+    mandatory: true
+  - knowledge_component: concept:sql.chave-estrangeira
+    bloom_level: COMPREHENSION
+    description: Interpretar, no diagrama da loja, as referências entre registros de tabelas diferentes.
+    mandatory: true

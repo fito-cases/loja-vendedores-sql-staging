@@ -1,0 +1,3 @@
+deliverables:
+  - type: code_change
+    description: Funções do cadastro de vendedores e do relatório semanal completas, respeitando as assinaturas e os retornos documentados.

@@ -1,0 +1,3 @@
+Contrato do estado inicial a ser verificado após a construção do projeto: a loja abre com as áreas de vendas e administração, os demais cadastros e o fluxo de venda funcionam, e as tabelas já existem, com pelo menos dez registros naturais em cada uma. A recriação da base restaura o mesmo cenário de testes no projeto Supabase de exercícios.
+
+As rotas, templates e testes das duas funcionalidades já estão disponíveis nesse estado. Nas funções a completar, a assinatura e a docstring informam os parâmetros e as colunas esperadas. Outro repositório completo serve de referência. Só as verificações que dependem das operações ainda incompletas devem falhar.

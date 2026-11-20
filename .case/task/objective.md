@@ -1,0 +1,1 @@
+Complete nos repositórios o cadastro de vendedores e a consulta das vendas por período para que a administração mantenha as fichas individuais e a equipe confira cada venda da semana, mesmo sem vendedor identificado.

@@ -1,0 +1,77 @@
+questions:
+  - type: multiple_choice
+    prompt: |
+      A tabela vendedores está vazia. O comando abaixo é executado com sucesso:
+      INSERT INTO vendedores (cidade, nome) VALUES ('Niterói', 'Lia');
+      Qual é o par (nome, cidade) do novo cadastro?
+    knowledge_components:
+      - execution-fact:sql.insert-values-associa-valores-as-colunas-de-destino-pela-posicao
+    bloom_level: COMPREHENSION
+    id: dados-do-cadastro
+    choices:
+      - id: a
+        text: ('Niterói', 'Lia')
+      - id: b
+        text: ('Lia', 'Niterói')
+      - id: c
+        text: ('Lia', NULL)
+      - id: d
+        text: (NULL, 'Niterói')
+    answer: b
+  - type: multiple_choice
+    prompt: |
+      Há três vendedores: 12 — Ana, 18 — Ana e 23 — Bruno. A administração quer mudar apenas a cidade da vendedora 18.
+      UPDATE vendedores SET cidade = 'Maricá' WHERE nome = 'Ana';
+      Quais cadastros receberão a nova cidade e por quê?
+    knowledge_components:
+      - execution-fact:sql.update-altera-linhas-aprovadas-por-where-e-considera-todas-se-o-filtro-faltar
+    bloom_level: COMPREHENSION
+    id: edicao-de-homonimos
+    choices:
+      - id: a
+        text: Somente o 18, pois o nome identifica a vendedora escolhida pela administração.
+      - id: b
+        text: Somente o 12, pois a atualização termina na primeira correspondência.
+      - id: c
+        text: Nenhum, pois a atualização exige que o nome seja único.
+      - id: d
+        text: O 12 e o 18, pois as duas linhas atendem à condição sobre o nome.
+    answer: d
+  - type: multiple_choice
+    prompt: |
+      As vendas 41, 42 e 43 estão no período. Apenas a 42 não tem vendedor identificado.
+      A consulta A exige correspondência no cadastro de vendedores; a consulta B preserva a venda mesmo sem correspondência.
+      Qual alternativa descreve os resultados SQL, antes de qualquer formatação da tela?
+    knowledge_components:
+      - concept:sql.juncao-externa
+    bloom_level: COMPREHENSION
+    id: venda-sem-identificacao
+    choices:
+      - id: a
+        text: "A: 41 e 43. B: 41, 42 e 43, com NULL no nome do vendedor da venda 42."
+      - id: b
+        text: "A: 41 e 43. B: 41 e 43, pois não há nome para exibir na venda 42."
+      - id: c
+        text: "A: 41, 42 e 43. B: apenas 42, pois só ela não tem correspondência."
+      - id: d
+        text: "A: 41 e 43. B: 41, 42 e 43, com o nome do vendedor da venda 41 repetido na 42."
+    answer: a
+  - type: multiple_choice
+    prompt: |
+      Há quatro vendas no mesmo ano: 51 em 02/06, 52 em 03/06, 53 em 03/06 e 54 em 04/06.
+      A equipe informa 03/06 como data inicial e final. Os dois limites são inclusivos e o relatório apresenta uma linha por venda.
+      Quais números aparecem?
+    knowledge_components:
+      - concept:sql.selecao-por-predicado
+    bloom_level: COMPREHENSION
+    id: periodo-de-um-dia
+    choices:
+      - id: a
+        text: Nenhum.
+      - id: b
+        text: Apenas 52.
+      - id: c
+        text: 52 e 53.
+      - id: d
+        text: 51, 52, 53 e 54.
+    answer: c

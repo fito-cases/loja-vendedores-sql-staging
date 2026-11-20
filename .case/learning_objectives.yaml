@@ -1,0 +1,29 @@
+learning_objectives:
+  - knowledge_component: execution-fact:sql.insert-values-associa-valores-as-colunas-de-destino-pela-posicao
+    bloom_level: APPLICATION
+    description: "Cadastrar um vendedor preservando a correspondência entre os dados recebidos e os campos gravados."
+    weight: primary
+  - knowledge_component: concept:sql.consulta-de-dados
+    bloom_level: APPLICATION
+    description: "Recuperar a lista de vendedores e o cadastro individual solicitado pela administração."
+    weight: primary
+  - knowledge_component: execution-fact:sql.update-altera-linhas-aprovadas-por-where-e-considera-todas-se-o-filtro-faltar
+    bloom_level: APPLICATION
+    description: "Atualizar o cadastro solicitado sem alterar os demais vendedores."
+    weight: primary
+  - knowledge_component: execution-fact:sql.delete-remove-linhas-aprovadas-por-where-ou-todas-quando-nao-ha-filtro
+    bloom_level: APPLICATION
+    description: "Excluir o vendedor solicitado, quando permitido, preservando os demais cadastros."
+    weight: primary
+  - knowledge_component: concept:sql.juncao-interna
+    bloom_level: APPLICATION
+    description: "Relacionar cada venda ao cliente correto sem multiplicar as linhas do relatório."
+    weight: primary
+  - knowledge_component: concept:sql.juncao-externa
+    bloom_level: APPLICATION
+    description: "Apresentar o vendedor quando identificado e manter no relatório as vendas sem vendedor."
+    weight: primary
+  - knowledge_component: concept:sql.selecao-por-predicado
+    bloom_level: APPLICATION
+    description: "Recuperar somente as vendas pertencentes ao período solicitado."
+    weight: secondary

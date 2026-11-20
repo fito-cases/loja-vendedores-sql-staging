@@ -1,0 +1,4 @@
+- Altere apenas as funções incompletas nos repositórios. Preserve as assinaturas, as colunas e os formatos de retorno descritos nas docstrings.
+- Siga o padrão do projeto: funções curtas, nomes em português e SQL parametrizado, sem concatenar valores. Não introduza ORM nem mova SQL para as rotas.
+- Preserve esquema, dados iniciais, testes e regras de integridade. Não use agregações estatísticas nem recalcule o valor da venda.
+- Use apenas o banco de exercícios do seu grupo. Nunca inclua o arquivo `.env` ou credenciais na entrega.

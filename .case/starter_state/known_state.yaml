@@ -1,0 +1,9 @@
+build_status: not_applicable
+failing_tests:
+  - "Cadastro: inclusão persistida com chave devolvida"
+  - "Cadastro: listagem e consulta individual por código"
+  - "Cadastro: edição isolada do vendedor solicitado"
+  - "Cadastro: exclusão isolada quando permitida"
+  - "Relatório: cliente e valor corretos por venda"
+  - "Relatório: preservação das vendas sem vendedor"
+  - "Relatório: período com as duas datas inclusivas"

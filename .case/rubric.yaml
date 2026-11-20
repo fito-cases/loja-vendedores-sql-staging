@@ -1,0 +1,148 @@
+criteria:
+  - id: cadastrar-vendedor
+    title: O novo cadastro conserva os dados recebidos
+    knowledge_component: execution-fact:sql.insert-values-associa-valores-as-colunas-de-destino-pela-posicao
+    bloom_level: APPLICATION
+    weight: 12
+    evaluation_method:
+      type: ai
+      prompt_hint: Compare as linhas antes e depois da inclusão e confira o cadastro que a chave devolvida identifica. Inclua nomes iguais em cidades diferentes.
+    levels:
+      - score: 0
+        label: not_achieved
+        description: A função não insere um vendedor.
+      - score: 1
+        label: partial
+        description: Insere uma linha, mas troca ou perde um campo, ou não devolve a chave prevista.
+      - score: 2
+        label: achieved
+        description: Insere uma única linha com nome e cidade corretos e devolve a chave dessa linha. Uma nova leitura pela chave retornada encontra exatamente o nome e a cidade informados.
+      - score: 3
+        label: exemplary
+        description: Também cadastra dois homônimos de cidades diferentes em sequência, devolvendo a chave correta de cada um.
+  - id: consultar-vendedores
+    title: A lista e a ficha individual correspondem ao cadastro
+    knowledge_component: concept:sql.consulta-de-dados
+    bloom_level: APPLICATION
+    weight: 13
+    evaluation_method:
+      type: ai
+      prompt_hint: Confronte a lista com o conjunto completo, e a ficha com o código pedido. Observe campos e formatos, não uma ordem que o contrato não exige.
+    levels:
+      - score: 0
+        label: not_achieved
+        description: Nem a lista nem a ficha recuperam os cadastros solicitados.
+      - score: 1
+        label: partial
+        description: Apenas uma das leituras funciona, ou faltam campos previstos no retorno.
+      - score: 2
+        label: achieved
+        description: Lista todos os vendedores uma vez e busca por código a ficha correta, com os campos previstos; para código inexistente, devolve None. A lista e a ficha concordam para o mesmo código sem depender da posição da linha.
+      - score: 3
+        label: exemplary
+        description: Também mantém distintas as fichas de homônimos e devolve uma lista vazia, sem erro, quando não há cadastros.
+  - id: atualizar-vendedor
+    title: A edição modifica somente o cadastro solicitado
+    knowledge_component: execution-fact:sql.update-altera-linhas-aprovadas-por-where-e-considera-todas-se-o-filtro-faltar
+    bloom_level: APPLICATION
+    weight: 13
+    evaluation_method:
+      type: ai
+      prompt_hint: Compare nome e cidade antes e depois em todos os cadastros, inclusive no homônimo. Verifique o comportamento com código ausente.
+    levels:
+      - score: 0
+        label: not_achieved
+        description: A função não atualiza o vendedor solicitado.
+      - score: 1
+        label: partial
+        description: Atualiza apenas parte dos campos recebidos ou atinge outro cadastro.
+      - score: 2
+        label: achieved
+        description: Grava nome e cidade no cadastro solicitado, preservando sua identidade e os demais cadastros. Uma leitura posterior confirma os dois novos valores e que os dados dos demais vendedores permanecem iguais.
+      - score: 3
+        label: exemplary
+        description: Também edita corretamente um entre dois homônimos e mantém a tabela intacta quando o código não existe.
+  - id: excluir-vendedor
+    title: A exclusão remove somente o cadastro solicitado
+    knowledge_component: execution-fact:sql.delete-remove-linhas-aprovadas-por-where-ou-todas-quando-nao-ha-filtro
+    bloom_level: APPLICATION
+    weight: 12
+    evaluation_method:
+      type: ai
+      prompt_hint: Use um vendedor sem impedimento de exclusão; confira os códigos restantes. Não premie mudanças no esquema para evitar recusas legítimas.
+    levels:
+      - score: 0
+        label: not_achieved
+        description: A função não remove um vendedor cuja exclusão é permitida.
+      - score: 1
+        label: partial
+        description: Remove o vendedor solicitado, mas também remove outro registro ou contorna uma restrição do esquema.
+      - score: 2
+        label: achieved
+        description: Remove apenas o vendedor solicitado quando permitido, sem contornar as regras de integridade. A diferença entre os conjuntos de códigos antes e depois contém apenas o código solicitado.
+      - score: 3
+        label: exemplary
+        description: Também preserva o homônimo do vendedor excluído e não remove ninguém quando o código não existe.
+  - id: associar-cliente
+    title: Cada venda aparece uma vez, com seu cliente
+    knowledge_component: concept:sql.juncao-interna
+    bloom_level: APPLICATION
+    weight: 18
+    evaluation_method:
+      type: ai
+      prompt_hint: Examine a associação SQL entre venda e cliente. Compare por número de venda e não apenas por nome ou quantidade total de linhas.
+    levels:
+      - score: 0
+        label: not_achieved
+        description: O relatório não associa as vendas aos clientes.
+      - score: 1
+        label: partial
+        description: Há associações corretas, mas também clientes trocados, vendas ausentes ou linhas duplicadas.
+      - score: 2
+        label: achieved
+        description: Relaciona cada venda ao cliente correto em uma única linha, com número, data e valor registrado. Cada número de venda conserva o cliente e o valor daquela compra, independentemente dos itens.
+      - score: 3
+        label: exemplary
+        description: Também distingue compras de clientes homônimos e compras repetidas do mesmo cliente, sem multiplicar uma venda com vários itens.
+  - id: preservar-venda-sem-vendedor
+    title: A identificação opcional do vendedor não altera a lista de vendas
+    knowledge_component: concept:sql.juncao-externa
+    bloom_level: APPLICATION
+    weight: 18
+    evaluation_method:
+      type: ai
+      prompt_hint: Examine a associação opcional no SQL e compare os mesmos números de venda com e sem identificação. Verifique o campo do vendedor na saída do repositório.
+    levels:
+      - score: 0
+        label: not_achieved
+        description: A consulta não recupera a informação de vendedor.
+      - score: 1
+        label: partial
+        description: Mostra o vendedor nas vendas identificadas, mas perde vendas sem vendedor ou lhes atribui um nome indevido.
+      - score: 2
+        label: achieved
+        description: Mostra o nome correto quando há vendedor e mantém cada venda sem vendedor com esse campo ausente. O conjunto de números de venda não diminui quando falta a identificação do vendedor.
+      - score: 3
+        label: exemplary
+        description: Também preserva a identidade de cada venda em um período em que nenhuma delas tem vendedor, sem criar linhas para vendedores sem vendas.
+  - id: delimitar-periodo
+    title: O período informado determina quais vendas aparecem
+    knowledge_component: concept:sql.selecao-por-predicado
+    bloom_level: APPLICATION
+    weight: 14
+    evaluation_method:
+      type: ai
+      prompt_hint: "Use datas explícitas: imediatamente antes, em cada extremo e imediatamente depois. Repita com limites iguais e sem movimento."
+    levels:
+      - score: 0
+        label: not_achieved
+        description: A consulta ignora o período solicitado ou não produz um resultado utilizável.
+      - score: 1
+        label: partial
+        description: Aplica apenas um limite, perde vendas em uma das datas extremas ou inclui venda fora do período.
+      - score: 2
+        label: achieved
+        description: Usa as duas datas recebidas, inclui as vendas de ambas as datas extremas e exclui as anteriores e posteriores. A seleção acompanha os parâmetros de cada chamada, não uma semana fixa nos dados iniciais.
+      - score: 3
+        label: exemplary
+        description: Também devolve exatamente as vendas de um único dia quando os limites coincidem e uma lista vazia para período sem vendas.
