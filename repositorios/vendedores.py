@@ -14,8 +14,18 @@ def cadastrar_vendedor(dados):
     dados: dicionário com 'nome' (texto) e 'cidade' (texto).
     Retorna o cod_vendedor (inteiro) gerado pelo banco e gravado na nova linha.
     """
-    # TODO: escrever o comando SQL e executá-lo com a função adequada de db.py.
-    raise NotImplementedError('cadastrar_vendedor ainda não foi implementada.')
+    sql = """
+        INSERT INTO vendedores (
+            nome,
+            cidade
+        )
+        VALUES (
+            %(nome)s,
+            %(cidade)s
+        )
+        RETURNING cod_vendedor
+    """
+    return db.consultar_valor(sql, dados)
 
 
 def listar_vendedores():
@@ -25,8 +35,15 @@ def listar_vendedores():
     'cidade' (textos), uma por código. Sem vendedores, retorna lista vazia [].
     A ordem da lista não faz parte do contrato.
     """
-    # TODO: escrever o comando SQL e executá-lo com a função adequada de db.py.
-    raise NotImplementedError('listar_vendedores ainda não foi implementada.')
+    sql = """
+        SELECT
+            cod_vendedor,
+            nome,
+            cidade
+        FROM vendedores
+        ORDER BY nome, cidade, cod_vendedor
+    """
+    return db.consultar(sql)
 
 
 def buscar_vendedor(cod_vendedor):
@@ -35,8 +52,15 @@ def buscar_vendedor(cod_vendedor):
     A ficha é um dicionário com 'cod_vendedor', 'nome' e 'cidade'.
     Se o código não existir, retorna None.
     """
-    # TODO: escrever o comando SQL e executá-lo com a função adequada de db.py.
-    raise NotImplementedError('buscar_vendedor ainda não foi implementada.')
+    sql = """
+        SELECT
+            cod_vendedor,
+            nome,
+            cidade
+        FROM vendedores
+        WHERE cod_vendedor = %(cod_vendedor)s
+    """
+    return db.consultar_um(sql, {'cod_vendedor': cod_vendedor})
 
 
 def atualizar_vendedor(dados):
@@ -46,8 +70,14 @@ def atualizar_vendedor(dados):
     Somente esse vendedor é alterado; se o código não existir, nenhum vendedor
     é modificado. Retorna None.
     """
-    # TODO: escrever o comando SQL e executá-lo com a função adequada de db.py.
-    raise NotImplementedError('atualizar_vendedor ainda não foi implementada.')
+    sql = """
+        UPDATE vendedores
+        SET
+            nome = %(nome)s,
+            cidade = %(cidade)s
+        WHERE cod_vendedor = %(cod_vendedor)s
+    """
+    db.executar(sql, dados)
 
 
 def excluir_vendedor(cod_vendedor):
@@ -57,5 +87,8 @@ def excluir_vendedor(cod_vendedor):
     removido. Se o vendedor estiver registrado em vendas, o banco recusa a
     exclusão: deixe o erro seguir até a rota, que mostra o aviso na tela.
     """
-    # TODO: escrever o comando SQL e executá-lo com a função adequada de db.py.
-    raise NotImplementedError('excluir_vendedor ainda não foi implementada.')
+    sql = """
+        DELETE FROM vendedores
+        WHERE cod_vendedor = %(cod_vendedor)s
+    """
+    db.executar(sql, {'cod_vendedor': cod_vendedor})

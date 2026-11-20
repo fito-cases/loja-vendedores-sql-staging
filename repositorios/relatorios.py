@@ -20,5 +20,21 @@ def listar_vendas_periodo(data_inicial, data_final):
         'valor': valor registrado na venda (Decimal).
     A ordem da lista não faz parte do contrato.
     """
-    # TODO: escrever o comando SQL e executá-lo com a função adequada de db.py.
-    raise NotImplementedError('listar_vendas_periodo ainda não foi implementada.')
+    sql = """
+        SELECT
+            vendas.numero_venda,
+            vendas.data_venda,
+            clientes.nome AS cliente,
+            vendedores.nome AS vendedor,
+            vendas.valor
+        FROM vendas
+        INNER JOIN clientes
+            ON clientes.cod_cliente = vendas.cod_cliente
+        LEFT JOIN vendedores
+            ON vendedores.cod_vendedor = vendas.cod_vendedor
+        WHERE vendas.data_venda >= %(data_inicial)s
+          AND vendas.data_venda <= %(data_final)s
+        ORDER BY vendas.data_venda, vendas.numero_venda
+    """
+    parametros = {'data_inicial': data_inicial, 'data_final': data_final}
+    return db.consultar(sql, parametros)
