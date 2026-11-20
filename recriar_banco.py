@@ -1,14 +1,16 @@
-"""Recria o esquema loja e os dados iniciais no projeto Supabase de exercícios.
+"""Recria as tabelas e os dados iniciais da loja no projeto Supabase de exercícios.
 
 Uso (no terminal, com o .env preenchido):
 
     python recriar_banco.py
 
-ATENÇÃO: a recriação apaga e recria as oito tabelas do esquema loja. Antes de
-conectar, o programa confere que:
-  - PERMITIR_RECRIACAO=sim está no .env;
+ATENÇÃO: o comando apaga e recria as oito tabelas do esquema ESQUEMA_SISTEMA,
+voltando aos dados iniciais. Os testes usam o mesmo código, mas só no esquema
+ESQUEMA_TESTES. Antes de conectar, o programa confere que:
   - BANCO_URL é a URI do Session pooler do Supabase (porta 5432), com o banco
-    postgres e TLS, sem opções extras.
+    postgres e TLS, sem opções extras;
+  - ESQUEMA_SISTEMA e ESQUEMA_TESTES são nomes simples, diferentes entre si e
+    diferentes de public e dos esquemas do próprio Supabase.
 Qualquer divergência interrompe o programa sem abrir conexão.
 """
 import os
@@ -18,10 +20,15 @@ from pathlib import Path
 
 import psycopg
 from dotenv import load_dotenv
+from psycopg import sql
 from psycopg.conninfo import conninfo_to_dict
 
+import db
+
 PASTA_SQL = Path(__file__).parent / 'sql'
-ARQUIVOS_SQL = [PASTA_SQL / 'schema.sql', PASTA_SQL / 'dados.sql']
+ARQUIVO_ESTRUTURA = PASTA_SQL / 'schema.sql'
+ARQUIVO_DADOS = PASTA_SQL / 'dados.sql'
+ARQUIVOS_SQL = [ARQUIVO_ESTRUTURA, ARQUIVO_DADOS]
 
 PADRAO_HOST_SESSION_POOLER = re.compile(
     r'^aws-[0-9]+-[a-z]+-[a-z]+-[0-9]+\.pooler\.supabase\.com$'
@@ -43,20 +50,11 @@ CAMPOS_ACEITOS_NA_URL = (
 
 
 def ler_variaveis():
-    """Lê do ambiente (e do .env) só as variáveis que controlam a recriação."""
+    """Lê do ambiente (e do .env) só a variável da conexão."""
     load_dotenv()
     return {
         'BANCO_URL': os.environ.get('BANCO_URL', ''),
-        'PERMITIR_RECRIACAO': os.environ.get('PERMITIR_RECRIACAO', ''),
     }
-
-
-def conferir_autorizacao(variaveis):
-    if variaveis['PERMITIR_RECRIACAO'].strip() != 'sim':
-        raise ValueError(
-            'recriação não autorizada: defina PERMITIR_RECRIACAO=sim no .env '
-            'do projeto de exercícios.'
-        )
 
 
 def ler_parametros_da_url(url):
@@ -99,28 +97,37 @@ def conferir_destino(parametros):
         )
 
 
+def ler_esquemas():
+    """Nomes dos dois esquemas, conferidos por db.py."""
+    try:
+        return db.ler_esquemas()
+    except RuntimeError as erro:
+        raise ValueError(str(erro)) from None
+
+
 def validar_alvo(variaveis):
     """Valida o destino antes de qualquer conexão e devolve o alvo conferido.
 
     Lança ValueError com o motivo da recusa. Nenhuma mensagem contém a senha.
     """
-    conferir_autorizacao(variaveis)
     parametros = ler_parametros_da_url(variaveis['BANCO_URL'])
     conferir_destino(parametros)
+    esquemas = ler_esquemas()
     return {
         'url': variaveis['BANCO_URL'].strip(),
         'host': parametros['host'],
         'porta': PORTA_SESSION_POOLER,
         'usuario': parametros.get('user', ''),
-        'sslmode': parametros.get('sslmode', 'require'),
+        'esquema_sistema': esquemas['sistema'],
+        'esquema_testes': esquemas['testes'],
     }
 
 
-def descrever_alvo(alvo):
+def descrever_alvo(alvo, esquema):
     """Texto do alvo para o terminal, sem senha nem URL completa."""
     return (
         f"Session pooler {alvo['host']}:{alvo['porta']} | usuário {alvo['usuario']} | "
-        f"banco {BANCO_DO_PROJETO} | esquema loja | TLS {alvo['sslmode']}"
+        f"banco {BANCO_DO_PROJETO} | esquema {esquema}"
     )
 
 
@@ -132,20 +139,33 @@ def ocultar_senha(texto, alvo):
     return texto
 
 
-def recriar(alvo):
-    """Executa schema.sql e dados.sql em uma única transação no alvo conferido.
+def executar_arquivos(alvo, esquema, arquivos):
+    """Executa os arquivos SQL no esquema informado, em uma única transação.
 
-    Se algum comando falhar, nada é confirmado. Devolve a versão do servidor.
+    O esquema é criado se ainda não existir. Se algum comando falhar, nada é
+    confirmado. Devolve a versão do servidor.
     """
-    with psycopg.connect(
-        alvo['url'],
-        sslmode=alvo['sslmode'],
-        connect_timeout=15,
-    ) as conexao:
-        for arquivo in ARQUIVOS_SQL:
+    with db.conectar(alvo['url'], esquema) as conexao:
+        conexao.execute(sql.SQL('CREATE SCHEMA IF NOT EXISTS {}').format(sql.Identifier(esquema)))
+        for arquivo in arquivos:
             conexao.execute(arquivo.read_text(encoding='utf-8'))
         linha = conexao.execute('SHOW server_version').fetchone()
-    return linha[0]
+    return linha['server_version']
+
+
+def recriar(alvo, esquema):
+    """Recria tabelas, gatilhos e dados iniciais no esquema (schema.sql + dados.sql)."""
+    return executar_arquivos(alvo, esquema, [ARQUIVO_ESTRUTURA, ARQUIVO_DADOS])
+
+
+def criar_estrutura(alvo, esquema):
+    """Recria só tabelas e gatilhos, sem dados (schema.sql). Usada pelos testes."""
+    return executar_arquivos(alvo, esquema, [ARQUIVO_ESTRUTURA])
+
+
+def recarregar_dados(alvo, esquema):
+    """Apaga as linhas e carrega os dados iniciais (dados.sql). Usada pelos testes."""
+    return executar_arquivos(alvo, esquema, [ARQUIVO_DADOS])
 
 
 def main():
@@ -154,14 +174,15 @@ def main():
     except ValueError as erro:
         print(f'Recriação recusada: {erro}', file=sys.stderr)
         return 2
-    print(f'Alvo conferido: {descrever_alvo(alvo)}')
+    esquema = alvo['esquema_sistema']
+    print(f'Alvo conferido: {descrever_alvo(alvo, esquema)}')
     try:
-        versao = recriar(alvo)
+        versao = recriar(alvo, esquema)
     except psycopg.Error as erro:
         print('Falha ao recriar; nada foi confirmado.', file=sys.stderr)
         print(ocultar_senha(f'{type(erro).__name__}: {erro}', alvo), file=sys.stderr)
         return 1
-    print(f'Esquema loja e dados iniciais recriados (PostgreSQL {versao}).')
+    print(f'Esquema {esquema} recriado com os dados iniciais (PostgreSQL {versao}).')
     return 0
 
 

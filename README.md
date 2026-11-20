@@ -31,12 +31,12 @@ navegador -> rotas/*.py -> repositorios/*.py -> db.py -> PostgreSQL (Supabase)
 | `app.py` | Cria a aplicação Flask e registra as rotas das duas áreas. |
 | `rotas/` | Uma função por página ou ação. Lê o formulário, converte os campos (funções `ler_dados_...`), chama o repositório e mostra a página. Não contém SQL. |
 | `repositorios/` | Uma função por comando SQL, com parâmetros nomeados `%(nome)s`. |
-| `db.py` | `consultar`, `consultar_um`, `consultar_valor`, `executar` (uma conexão por chamada) e `transacao` (vários comandos confirmados juntos). |
+| `db.py` | `consultar`, `consultar_um`, `consultar_valor`, `executar` (uma conexão por chamada) e `transacao` (vários comandos confirmados juntos). Cada conexão usa só o esquema da aplicação (ou, nos testes, o esquema de testes). |
 | `regras.py` | Funções puras usadas por várias rotas: conversão de campos, formatação em reais e datas, mensagens das recusas do banco. |
 | `relogio.py` | Data de hoje no fuso da loja (`FUSO_LOJA`). |
 | `templates/` | Páginas Jinja2, uma pasta por módulo, todas herdando de `base.html`. |
-| `sql/schema.sql`, `sql/dados.sql` | Tabelas, restrições e gatilhos do esquema `loja`; dados iniciais fictícios. |
-| `recriar_banco.py` | Recria o esquema `loja` e os dados iniciais (não é uma página da aplicação). |
+| `sql/schema.sql`, `sql/dados.sql` | Tabelas, restrições e gatilhos; dados iniciais fictícios. Os nomes não levam o esquema na frente: valem para o esquema escolhido no `.env`. |
+| `recriar_banco.py` | Recria tabelas e dados iniciais do esquema da aplicação (não é uma página da aplicação). |
 | `testes/` | Testes pytest: um arquivo por repositório, mais telas, banco, dados e proteções. |
 
 As regras de integridade ficam no banco: chaves, `NOT NULL`, valores não
@@ -76,8 +76,10 @@ python -m pip check
      `#` → `%23`, `?` → `%3F`, `%` → `%25`, `&` → `%26`.
    - Acrescente `?sslmode=require` ao final, para exigir conexão com TLS.
    - Use a porta 5432 (Session pooler), não a 6543.
-3. `PERMITIR_RECRIACAO=sim` autoriza `recriar_banco.py` e os testes de banco a
-   apagar e recriar o esquema `loja`. Use apenas no projeto de exercícios.
+3. `ESQUEMA_SISTEMA` (ex.: `loja`) é o esquema usado pela aplicação;
+   `ESQUEMA_TESTES` (ex.: `loja_testes`) é o esquema usado pelos testes. Os
+   nomes devem ser diferentes, com letras minúsculas, dígitos e `_`, e não podem
+   ser `public` nem um esquema do próprio Supabase (`auth`, `storage`...).
 4. `FUSO_LOJA` (padrão `America/Sao_Paulo`) define a semana atual do relatório.
 5. `CHAVE_SECRETA`: qualquer texto aleatório.
 
@@ -87,12 +89,15 @@ python -m pip check
 python recriar_banco.py
 ```
 
-Antes de conectar, o programa confere que `PERMITIR_RECRIACAO=sim` e que
-`BANCO_URL` é um Session pooler do Supabase (porta 5432, banco `postgres`,
-TLS, sem opções extras); se algo divergir, ele para sem abrir conexão. Ele
-mostra apenas o alvo (host, porta, usuário, banco), nunca a senha. Os dois
-arquivos SQL são executados em uma única transação e só afetam as oito
-tabelas do esquema `loja`: o esquema `public` não é tocado.
+O comando apaga e recria as oito tabelas do esquema `ESQUEMA_SISTEMA`, com os
+dados iniciais: use-o para preparar o banco pela primeira vez ou para voltar ao
+estado inicial. Antes de conectar, o programa confere que `BANCO_URL` é um
+Session pooler do Supabase (porta 5432, banco `postgres`, TLS, sem opções
+extras) e que os nomes dos dois esquemas são válidos e diferentes; se algo
+divergir, ele para sem abrir conexão. Ele mostra apenas o alvo (host, porta,
+usuário, banco, esquema), nunca a senha. Os dois arquivos SQL são executados
+em uma única transação e só afetam as tabelas da loja nesse esquema: o esquema
+`public` e o esquema de testes não são tocados.
 
 ## Executar a aplicação
 
@@ -110,17 +115,22 @@ aviso de operação indisponível; as demais funcionam normalmente.
 python -m pytest -q
 ```
 
-- Antes de **cada** teste que usa o banco, o esquema `loja` e os dados iniciais
-  são recriados (cada função do repositório confirma o que grava em sua própria
-  conexão, então desfazer a transação do teste não bastaria). Por isso os
-  testes de banco são lentos: alguns segundos cada pelo Session pooler.
-- Rode **em série**: feche a aplicação e outras execuções de testes antes de
-  começar, e não use execução paralela.
+- Os testes usam **só** o esquema `ESQUEMA_TESTES`: rodar os testes não apaga
+  o que foi feito pelas telas, que fica em `ESQUEMA_SISTEMA`.
+- Na primeira vez em cada execução, as tabelas e os gatilhos do esquema de
+  testes são recriados; antes de **cada** teste que usa o banco, os dados
+  iniciais são recarregados (cada função do repositório confirma o que grava
+  em sua própria conexão, então desfazer a transação do teste não bastaria).
+- Os testes de banco levam alguns segundos cada: cada chamada abre uma conexão
+  com o Session pooler, e o tempo depende da distância até a região do projeto
+  Supabase. Prefira criar o projeto na região mais próxima (para o Brasil,
+  *South America (São Paulo)*).
+- Rode **em série**: não rode duas execuções de testes ao mesmo tempo nem use
+  execução paralela.
 - Sem `.env` válido, os testes de banco terminam em **erro** (nunca em sucesso).
   Os testes de tela (`test_telas.py`), de regras e de proteção não usam o banco.
 - `test_vendedores.py` e `test_relatorios.py` verificam a atividade: falham
   enquanto as funções não estiverem completas.
-- Ao terminar, rode `python recriar_banco.py` para deixar a base no estado inicial.
 
 ## Combinações ensaiadas na preparação do caso
 
@@ -143,7 +153,5 @@ Windows e macOS não foram ensaiados.
 - **Fuso horário no Windows:** o Python no Windows não traz a base de fusos.
   Se a página da conferência mostrar erro e o terminal citar `FUSO_LOJA`,
   instale a base com `python -m pip install tzdata`.
-- Os testes de banco e a aplicação usam a mesma base: rodar os testes apaga o
-  que foi feito pelas telas.
 - O projeto não gera pedidos de compra, pagamentos, notas fiscais nem
   relatórios estatísticos.

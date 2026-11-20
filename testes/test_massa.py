@@ -155,7 +155,7 @@ def test_sequencias_prontas_para_a_proxima_inclusao():
     sql = """
         SELECT sequencename, last_value
         FROM pg_sequences
-        WHERE schemaname = 'loja'
+        WHERE schemaname = current_schema()
     """
     ultimos = {}
     for sequencia in db.consultar(sql):

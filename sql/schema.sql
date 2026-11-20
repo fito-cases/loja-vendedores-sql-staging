@@ -1,8 +1,10 @@
--- Esquema da loja: oito tabelas no esquema privado loja (PostgreSQL).
+-- Estrutura da loja: oito tabelas, restrições e gatilhos (PostgreSQL).
 --
--- Executado por recriar_banco.py junto com dados.sql, em UMA transação: se
--- algum comando falhar, nada é confirmado. Remove e recria somente os objetos
--- conhecidos do esquema loja, sem CASCADE, e nunca toca no esquema public.
+-- Executado por recriar_banco.py em UMA transação (seguido de dados.sql na
+-- recriação completa), dentro do esquema escolhido no .env: ESQUEMA_SISTEMA para a aplicação ou
+-- ESQUEMA_TESTES para os testes. Por isso os nomes não têm o esquema na
+-- frente: a conexão usa só esse esquema (search_path). Remove e recria apenas
+-- os objetos conhecidos da loja, sem CASCADE, e nunca toca no esquema public.
 --
 -- Regras de integridade ficam no banco e valem também para comandos SQL
 -- escritos diretamente, fora da aplicação:
@@ -12,36 +14,37 @@
 --   * preço, estoque e valor nunca negativos; quantidade sempre positiva;
 --   * gatilhos mantêm o estoque e o valor da venda a partir dos itens;
 --   * created_at e updated_at são preenchidos pelo próprio banco.
-
-CREATE SCHEMA IF NOT EXISTS loja;
+--
+-- As funções usam SET search_path FROM CURRENT: ficam presas ao esquema em
+-- que foram criadas, qualquer que seja a conexão que dispare o gatilho.
 
 
 -- ---------------------------------------------------------------------------
 -- 1. Remoção do que já existir (tabelas filhas antes das referenciadas)
 -- ---------------------------------------------------------------------------
 
-DROP TABLE IF EXISTS loja.itens_vendas;
-DROP TABLE IF EXISTS loja.fornecimentos;
-DROP TABLE IF EXISTS loja.vendas;
-DROP TABLE IF EXISTS loja.produtos;
-DROP TABLE IF EXISTS loja.clientes;
-DROP TABLE IF EXISTS loja.vendedores;
-DROP TABLE IF EXISTS loja.fornecedores;
-DROP TABLE IF EXISTS loja.categorias;
+DROP TABLE IF EXISTS itens_vendas;
+DROP TABLE IF EXISTS fornecimentos;
+DROP TABLE IF EXISTS vendas;
+DROP TABLE IF EXISTS produtos;
+DROP TABLE IF EXISTS clientes;
+DROP TABLE IF EXISTS vendedores;
+DROP TABLE IF EXISTS fornecedores;
+DROP TABLE IF EXISTS categorias;
 
-DROP FUNCTION IF EXISTS loja.registrar_datas();
-DROP FUNCTION IF EXISTS loja.conferir_valor_da_venda();
-DROP FUNCTION IF EXISTS loja.aplicar_item_de_venda();
-DROP FUNCTION IF EXISTS loja.baixar_estoque(integer, integer);
-DROP FUNCTION IF EXISTS loja.devolver_estoque(integer, integer);
-DROP FUNCTION IF EXISTS loja.somar_ao_valor_da_venda(integer, numeric);
+DROP FUNCTION IF EXISTS registrar_datas();
+DROP FUNCTION IF EXISTS conferir_valor_da_venda();
+DROP FUNCTION IF EXISTS aplicar_item_de_venda();
+DROP FUNCTION IF EXISTS baixar_estoque(integer, integer);
+DROP FUNCTION IF EXISTS devolver_estoque(integer, integer);
+DROP FUNCTION IF EXISTS somar_ao_valor_da_venda(integer, numeric);
 
 
 -- ---------------------------------------------------------------------------
 -- 2. Tabelas (referenciadas antes das filhas)
 -- ---------------------------------------------------------------------------
 
-CREATE TABLE loja.categorias (
+CREATE TABLE categorias (
     cod_categoria integer GENERATED ALWAYS AS IDENTITY,
     nome          varchar(50) NOT NULL,
     created_at    timestamptz NOT NULL DEFAULT now(),
@@ -49,7 +52,7 @@ CREATE TABLE loja.categorias (
     CONSTRAINT categorias_pk PRIMARY KEY (cod_categoria)
 );
 
-CREATE TABLE loja.fornecedores (
+CREATE TABLE fornecedores (
     cod_fornecedor integer GENERATED ALWAYS AS IDENTITY,
     razao_social   varchar(100) NOT NULL,
     cidade         varchar(70)  NOT NULL,
@@ -60,7 +63,7 @@ CREATE TABLE loja.fornecedores (
     CONSTRAINT fornecedores_estado_sigla CHECK (estado ~ '^[A-Z]{2}$')
 );
 
-CREATE TABLE loja.vendedores (
+CREATE TABLE vendedores (
     cod_vendedor integer GENERATED ALWAYS AS IDENTITY,
     nome         varchar(100) NOT NULL,
     cidade       varchar(70)  NOT NULL,
@@ -69,7 +72,7 @@ CREATE TABLE loja.vendedores (
     CONSTRAINT vendedores_pk PRIMARY KEY (cod_vendedor)
 );
 
-CREATE TABLE loja.clientes (
+CREATE TABLE clientes (
     cod_cliente integer GENERATED ALWAYS AS IDENTITY,
     nome        varchar(100) NOT NULL,
     rua_numero  varchar(70)  NOT NULL,
@@ -84,7 +87,7 @@ CREATE TABLE loja.clientes (
     CONSTRAINT clientes_estado_sigla CHECK (estado ~ '^[A-Z]{2}$')
 );
 
-CREATE TABLE loja.produtos (
+CREATE TABLE produtos (
     cod_produto    integer GENERATED ALWAYS AS IDENTITY,
     descricao      varchar(100) NOT NULL,
     preco          numeric(5,2) NOT NULL,
@@ -98,10 +101,10 @@ CREATE TABLE loja.produtos (
     CONSTRAINT produtos_estoque_nao_negativo CHECK (qtd_estoque >= 0),
     CONSTRAINT produtos_minimo_nao_negativo CHECK (estoque_minimo >= 0),
     CONSTRAINT produtos_categoria_fk FOREIGN KEY (cod_categoria)
-        REFERENCES loja.categorias (cod_categoria) ON DELETE RESTRICT
+        REFERENCES categorias (cod_categoria) ON DELETE RESTRICT
 );
 
-CREATE TABLE loja.vendas (
+CREATE TABLE vendas (
     numero_venda integer GENERATED ALWAYS AS IDENTITY,
     cod_cliente  integer       NOT NULL,
     cod_vendedor integer,
@@ -112,12 +115,12 @@ CREATE TABLE loja.vendas (
     CONSTRAINT vendas_pk PRIMARY KEY (numero_venda),
     CONSTRAINT vendas_valor_nao_negativo CHECK (valor >= 0),
     CONSTRAINT vendas_cliente_fk FOREIGN KEY (cod_cliente)
-        REFERENCES loja.clientes (cod_cliente) ON DELETE RESTRICT,
+        REFERENCES clientes (cod_cliente) ON DELETE RESTRICT,
     CONSTRAINT vendas_vendedor_fk FOREIGN KEY (cod_vendedor)
-        REFERENCES loja.vendedores (cod_vendedor) ON DELETE RESTRICT
+        REFERENCES vendedores (cod_vendedor) ON DELETE RESTRICT
 );
 
-CREATE TABLE loja.itens_vendas (
+CREATE TABLE itens_vendas (
     numero_venda   integer       NOT NULL,
     cod_produto    integer       NOT NULL,
     quantidade     integer       NOT NULL,
@@ -128,39 +131,40 @@ CREATE TABLE loja.itens_vendas (
     CONSTRAINT itens_vendas_quantidade_positiva CHECK (quantidade > 0),
     CONSTRAINT itens_vendas_preco_nao_negativo CHECK (preco_unitario >= 0),
     CONSTRAINT itens_vendas_venda_fk FOREIGN KEY (numero_venda)
-        REFERENCES loja.vendas (numero_venda) ON DELETE RESTRICT,
+        REFERENCES vendas (numero_venda) ON DELETE RESTRICT,
     CONSTRAINT itens_vendas_produto_fk FOREIGN KEY (cod_produto)
-        REFERENCES loja.produtos (cod_produto) ON DELETE RESTRICT
+        REFERENCES produtos (cod_produto) ON DELETE RESTRICT
 );
 
-CREATE TABLE loja.fornecimentos (
+CREATE TABLE fornecimentos (
     cod_fornecedor integer     NOT NULL,
     cod_produto    integer     NOT NULL,
     created_at     timestamptz NOT NULL DEFAULT now(),
     updated_at     timestamptz NOT NULL DEFAULT now(),
     CONSTRAINT fornecimentos_pk PRIMARY KEY (cod_fornecedor, cod_produto),
     CONSTRAINT fornecimentos_fornecedor_fk FOREIGN KEY (cod_fornecedor)
-        REFERENCES loja.fornecedores (cod_fornecedor) ON DELETE RESTRICT,
+        REFERENCES fornecedores (cod_fornecedor) ON DELETE RESTRICT,
     CONSTRAINT fornecimentos_produto_fk FOREIGN KEY (cod_produto)
-        REFERENCES loja.produtos (cod_produto) ON DELETE RESTRICT
+        REFERENCES produtos (cod_produto) ON DELETE RESTRICT
 );
 
 -- Índices para as colunas de chave estrangeira que não iniciam uma chave primária.
-CREATE INDEX produtos_cod_categoria_idx ON loja.produtos (cod_categoria);
-CREATE INDEX vendas_cod_cliente_idx ON loja.vendas (cod_cliente);
-CREATE INDEX vendas_cod_vendedor_idx ON loja.vendas (cod_vendedor);
-CREATE INDEX vendas_data_venda_idx ON loja.vendas (data_venda);
-CREATE INDEX itens_vendas_cod_produto_idx ON loja.itens_vendas (cod_produto);
-CREATE INDEX fornecimentos_cod_produto_idx ON loja.fornecimentos (cod_produto);
+CREATE INDEX produtos_cod_categoria_idx ON produtos (cod_categoria);
+CREATE INDEX vendas_cod_cliente_idx ON vendas (cod_cliente);
+CREATE INDEX vendas_cod_vendedor_idx ON vendas (cod_vendedor);
+CREATE INDEX vendas_data_venda_idx ON vendas (data_venda);
+CREATE INDEX itens_vendas_cod_produto_idx ON itens_vendas (cod_produto);
+CREATE INDEX fornecimentos_cod_produto_idx ON fornecimentos (cod_produto);
 
 
 -- ---------------------------------------------------------------------------
 -- 3. Datas de criação e de última atualização (todas as tabelas)
 -- ---------------------------------------------------------------------------
 
-CREATE FUNCTION loja.registrar_datas()
+CREATE FUNCTION registrar_datas()
 RETURNS trigger
 LANGUAGE plpgsql
+SET search_path FROM CURRENT
 AS $$
 BEGIN
     IF TG_OP = 'INSERT' THEN
@@ -173,22 +177,22 @@ BEGIN
 END;
 $$;
 
-CREATE TRIGGER registrar_datas BEFORE INSERT OR UPDATE ON loja.categorias
-    FOR EACH ROW EXECUTE FUNCTION loja.registrar_datas();
-CREATE TRIGGER registrar_datas BEFORE INSERT OR UPDATE ON loja.fornecedores
-    FOR EACH ROW EXECUTE FUNCTION loja.registrar_datas();
-CREATE TRIGGER registrar_datas BEFORE INSERT OR UPDATE ON loja.vendedores
-    FOR EACH ROW EXECUTE FUNCTION loja.registrar_datas();
-CREATE TRIGGER registrar_datas BEFORE INSERT OR UPDATE ON loja.clientes
-    FOR EACH ROW EXECUTE FUNCTION loja.registrar_datas();
-CREATE TRIGGER registrar_datas BEFORE INSERT OR UPDATE ON loja.produtos
-    FOR EACH ROW EXECUTE FUNCTION loja.registrar_datas();
-CREATE TRIGGER registrar_datas BEFORE INSERT OR UPDATE ON loja.vendas
-    FOR EACH ROW EXECUTE FUNCTION loja.registrar_datas();
-CREATE TRIGGER registrar_datas BEFORE INSERT OR UPDATE ON loja.itens_vendas
-    FOR EACH ROW EXECUTE FUNCTION loja.registrar_datas();
-CREATE TRIGGER registrar_datas BEFORE INSERT OR UPDATE ON loja.fornecimentos
-    FOR EACH ROW EXECUTE FUNCTION loja.registrar_datas();
+CREATE TRIGGER registrar_datas BEFORE INSERT OR UPDATE ON categorias
+    FOR EACH ROW EXECUTE FUNCTION registrar_datas();
+CREATE TRIGGER registrar_datas BEFORE INSERT OR UPDATE ON fornecedores
+    FOR EACH ROW EXECUTE FUNCTION registrar_datas();
+CREATE TRIGGER registrar_datas BEFORE INSERT OR UPDATE ON vendedores
+    FOR EACH ROW EXECUTE FUNCTION registrar_datas();
+CREATE TRIGGER registrar_datas BEFORE INSERT OR UPDATE ON clientes
+    FOR EACH ROW EXECUTE FUNCTION registrar_datas();
+CREATE TRIGGER registrar_datas BEFORE INSERT OR UPDATE ON produtos
+    FOR EACH ROW EXECUTE FUNCTION registrar_datas();
+CREATE TRIGGER registrar_datas BEFORE INSERT OR UPDATE ON vendas
+    FOR EACH ROW EXECUTE FUNCTION registrar_datas();
+CREATE TRIGGER registrar_datas BEFORE INSERT OR UPDATE ON itens_vendas
+    FOR EACH ROW EXECUTE FUNCTION registrar_datas();
+CREATE TRIGGER registrar_datas BEFORE INSERT OR UPDATE ON fornecimentos
+    FOR EACH ROW EXECUTE FUNCTION registrar_datas();
 
 
 -- ---------------------------------------------------------------------------
@@ -197,16 +201,17 @@ CREATE TRIGGER registrar_datas BEFORE INSERT OR UPDATE ON loja.fornecimentos
 
 -- Retira unidades do estoque. A linha do produto fica bloqueada até o fim da
 -- transação, então duas vendas simultâneas não usam as mesmas unidades.
-CREATE FUNCTION loja.baixar_estoque(codigo_produto integer, unidades integer)
+CREATE FUNCTION baixar_estoque(codigo_produto integer, unidades integer)
 RETURNS void
 LANGUAGE plpgsql
+SET search_path FROM CURRENT
 AS $$
 DECLARE
     disponivel integer;
 BEGIN
     SELECT qtd_estoque
       INTO disponivel
-      FROM loja.produtos
+      FROM produtos
      WHERE cod_produto = codigo_produto
        FOR UPDATE;
 
@@ -223,31 +228,33 @@ BEGIN
                   CONSTRAINT = 'estoque_suficiente';
     END IF;
 
-    UPDATE loja.produtos
+    UPDATE produtos
        SET qtd_estoque = qtd_estoque - unidades
      WHERE cod_produto = codigo_produto;
 END;
 $$;
 
 -- Devolve unidades ao estoque.
-CREATE FUNCTION loja.devolver_estoque(codigo_produto integer, unidades integer)
+CREATE FUNCTION devolver_estoque(codigo_produto integer, unidades integer)
 RETURNS void
 LANGUAGE plpgsql
+SET search_path FROM CURRENT
 AS $$
 BEGIN
-    UPDATE loja.produtos
+    UPDATE produtos
        SET qtd_estoque = qtd_estoque + unidades
      WHERE cod_produto = codigo_produto;
 END;
 $$;
 
 -- Soma uma diferença (positiva ou negativa) ao valor registrado da venda.
-CREATE FUNCTION loja.somar_ao_valor_da_venda(numero integer, diferenca numeric)
+CREATE FUNCTION somar_ao_valor_da_venda(numero integer, diferenca numeric)
 RETURNS void
 LANGUAGE plpgsql
+SET search_path FROM CURRENT
 AS $$
 BEGIN
-    UPDATE loja.vendas
+    UPDATE vendas
        SET valor = valor + diferenca
      WHERE numero_venda = numero;
 END;
@@ -256,50 +263,52 @@ $$;
 -- Depois de incluir, alterar ou excluir um item, ajusta estoque e valor na
 -- mesma transação do comando. O valor de cada item é quantidade x preço
 -- unitário histórico; o preço atual do produto não entra nesta conta.
-CREATE FUNCTION loja.aplicar_item_de_venda()
+CREATE FUNCTION aplicar_item_de_venda()
 RETURNS trigger
 LANGUAGE plpgsql
+SET search_path FROM CURRENT
 AS $$
 BEGIN
     IF TG_OP = 'INSERT' THEN
-        PERFORM loja.baixar_estoque(NEW.cod_produto, NEW.quantidade);
-        PERFORM loja.somar_ao_valor_da_venda(NEW.numero_venda, NEW.quantidade * NEW.preco_unitario);
+        PERFORM baixar_estoque(NEW.cod_produto, NEW.quantidade);
+        PERFORM somar_ao_valor_da_venda(NEW.numero_venda, NEW.quantidade * NEW.preco_unitario);
         RETURN NEW;
     END IF;
 
     IF TG_OP = 'DELETE' THEN
-        PERFORM loja.devolver_estoque(OLD.cod_produto, OLD.quantidade);
-        PERFORM loja.somar_ao_valor_da_venda(OLD.numero_venda, -(OLD.quantidade * OLD.preco_unitario));
+        PERFORM devolver_estoque(OLD.cod_produto, OLD.quantidade);
+        PERFORM somar_ao_valor_da_venda(OLD.numero_venda, -(OLD.quantidade * OLD.preco_unitario));
         RETURN OLD;
     END IF;
 
     -- UPDATE com o mesmo produto: aplica só a diferença de quantidade.
     IF NEW.cod_produto = OLD.cod_produto THEN
         IF NEW.quantidade > OLD.quantidade THEN
-            PERFORM loja.baixar_estoque(NEW.cod_produto, NEW.quantidade - OLD.quantidade);
+            PERFORM baixar_estoque(NEW.cod_produto, NEW.quantidade - OLD.quantidade);
         ELSIF NEW.quantidade < OLD.quantidade THEN
-            PERFORM loja.devolver_estoque(NEW.cod_produto, OLD.quantidade - NEW.quantidade);
+            PERFORM devolver_estoque(NEW.cod_produto, OLD.quantidade - NEW.quantidade);
         END IF;
     -- UPDATE com troca de produto: devolve o anterior e baixa o novo.
     ELSE
-        PERFORM loja.devolver_estoque(OLD.cod_produto, OLD.quantidade);
-        PERFORM loja.baixar_estoque(NEW.cod_produto, NEW.quantidade);
+        PERFORM devolver_estoque(OLD.cod_produto, OLD.quantidade);
+        PERFORM baixar_estoque(NEW.cod_produto, NEW.quantidade);
     END IF;
 
-    PERFORM loja.somar_ao_valor_da_venda(OLD.numero_venda, -(OLD.quantidade * OLD.preco_unitario));
-    PERFORM loja.somar_ao_valor_da_venda(NEW.numero_venda, NEW.quantidade * NEW.preco_unitario);
+    PERFORM somar_ao_valor_da_venda(OLD.numero_venda, -(OLD.quantidade * OLD.preco_unitario));
+    PERFORM somar_ao_valor_da_venda(NEW.numero_venda, NEW.quantidade * NEW.preco_unitario);
     RETURN NEW;
 END;
 $$;
 
-CREATE TRIGGER aplicar_item_de_venda AFTER INSERT OR UPDATE OR DELETE ON loja.itens_vendas
-    FOR EACH ROW EXECUTE FUNCTION loja.aplicar_item_de_venda();
+CREATE TRIGGER aplicar_item_de_venda AFTER INSERT OR UPDATE OR DELETE ON itens_vendas
+    FOR EACH ROW EXECUTE FUNCTION aplicar_item_de_venda();
 
 -- A venda começa com valor zero, e o valor só muda pelos itens. Um UPDATE
 -- feito diretamente (fora do gatilho dos itens) não pode alterar o valor.
-CREATE FUNCTION loja.conferir_valor_da_venda()
+CREATE FUNCTION conferir_valor_da_venda()
 RETURNS trigger
 LANGUAGE plpgsql
+SET search_path FROM CURRENT
 AS $$
 BEGIN
     IF TG_OP = 'INSERT' AND NEW.valor <> 0 THEN
@@ -319,5 +328,5 @@ BEGIN
 END;
 $$;
 
-CREATE TRIGGER conferir_valor_da_venda BEFORE INSERT OR UPDATE ON loja.vendas
-    FOR EACH ROW EXECUTE FUNCTION loja.conferir_valor_da_venda();
+CREATE TRIGGER conferir_valor_da_venda BEFORE INSERT OR UPDATE ON vendas
+    FOR EACH ROW EXECUTE FUNCTION conferir_valor_da_venda();

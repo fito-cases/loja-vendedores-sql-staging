@@ -1,5 +1,6 @@
--- Dados iniciais da loja (fictícios). Executado por recriar_banco.py logo
--- depois de schema.sql, na mesma transação.
+-- Dados iniciais da loja (fictícios). Executado por recriar_banco.py em UMA
+-- transação: depois de schema.sql na recriação completa e, nos testes, sozinho
+-- antes de cada teste, para voltar ao ponto de partida sem recriar as tabelas.
 --
 -- Os códigos são fixos para que os testes conheçam o cenário. Por isso os
 -- INSERTs usam OVERRIDING SYSTEM VALUE e, ao final, cada sequência é ajustada
@@ -19,9 +20,21 @@
 --     vendas; as demais vendas são de maio de 2025.
 
 
+-- Linhas existentes (tabelas filhas antes das referenciadas) -------------------
+
+DELETE FROM itens_vendas;
+DELETE FROM fornecimentos;
+DELETE FROM vendas;
+DELETE FROM produtos;
+DELETE FROM clientes;
+DELETE FROM vendedores;
+DELETE FROM fornecedores;
+DELETE FROM categorias;
+
+
 -- Categorias ------------------------------------------------------------------
 
-INSERT INTO loja.categorias (cod_categoria, nome)
+INSERT INTO categorias (cod_categoria, nome)
 OVERRIDING SYSTEM VALUE
 VALUES
     (1, 'Camisetas'),
@@ -39,7 +52,7 @@ VALUES
 
 -- Fornecedores ----------------------------------------------------------------
 
-INSERT INTO loja.fornecedores (cod_fornecedor, razao_social, cidade, estado)
+INSERT INTO fornecedores (cod_fornecedor, razao_social, cidade, estado)
 OVERRIDING SYSTEM VALUE
 VALUES
     (1, 'Malharia Serra Azul Ltda.', 'Petrópolis', 'RJ'),
@@ -57,7 +70,7 @@ VALUES
 
 -- Vendedores ------------------------------------------------------------------
 
-INSERT INTO loja.vendedores (cod_vendedor, nome, cidade)
+INSERT INTO vendedores (cod_vendedor, nome, cidade)
 OVERRIDING SYSTEM VALUE
 VALUES
     (1, 'Ana Lima', 'Niterói'),
@@ -74,7 +87,7 @@ VALUES
 
 -- Clientes --------------------------------------------------------------------
 
-INSERT INTO loja.clientes (cod_cliente, nome, rua_numero, bairro, cidade, estado, cep, telefone)
+INSERT INTO clientes (cod_cliente, nome, rua_numero, bairro, cidade, estado, cep, telefone)
 OVERRIDING SYSTEM VALUE
 VALUES
     (1, 'Lia Costa', 'Rua das Acácias, 120', 'Icaraí', 'Niterói', 'RJ', '24230-000', '(21) 90000-0101'),
@@ -93,7 +106,7 @@ VALUES
 
 -- Produtos (qtd_estoque = estoque antes das vendas abaixo) --------------------
 
-INSERT INTO loja.produtos (cod_produto, descricao, preco, qtd_estoque, estoque_minimo, cod_categoria)
+INSERT INTO produtos (cod_produto, descricao, preco, qtd_estoque, estoque_minimo, cod_categoria)
 OVERRIDING SYSTEM VALUE
 VALUES
     (1, 'Camiseta básica de algodão', 25.00, 48, 10, 1),
@@ -116,7 +129,7 @@ VALUES
 
 -- Fornecimentos (quais fornecedores oferecem quais produtos) ------------------
 
-INSERT INTO loja.fornecimentos (cod_fornecedor, cod_produto)
+INSERT INTO fornecimentos (cod_fornecedor, cod_produto)
 VALUES
     (1, 1),
     (1, 2),
@@ -141,7 +154,7 @@ VALUES
 
 -- Vendas (valor começa em zero; os itens calculam o valor) --------------------
 
-INSERT INTO loja.vendas (numero_venda, cod_cliente, cod_vendedor, data_venda)
+INSERT INTO vendas (numero_venda, cod_cliente, cod_vendedor, data_venda)
 OVERRIDING SYSTEM VALUE
 VALUES
     (91, 4, 3, '2025-05-05'),
@@ -164,7 +177,7 @@ VALUES
 
 -- Itens (preco_unitario é o preço praticado na data da venda) -----------------
 
-INSERT INTO loja.itens_vendas (numero_venda, cod_produto, quantidade, preco_unitario)
+INSERT INTO itens_vendas (numero_venda, cod_produto, quantidade, preco_unitario)
 VALUES
     (91, 3, 1, 119.90),
     (91, 15, 2, 27.90),
@@ -191,9 +204,9 @@ VALUES
 
 -- Próximos códigos gerados ----------------------------------------------------
 
-SELECT setval(pg_get_serial_sequence('loja.categorias', 'cod_categoria'), 11);
-SELECT setval(pg_get_serial_sequence('loja.fornecedores', 'cod_fornecedor'), 11);
-SELECT setval(pg_get_serial_sequence('loja.vendedores', 'cod_vendedor'), 10);
-SELECT setval(pg_get_serial_sequence('loja.clientes', 'cod_cliente'), 12);
-SELECT setval(pg_get_serial_sequence('loja.produtos', 'cod_produto'), 16);
-SELECT setval(pg_get_serial_sequence('loja.vendas', 'numero_venda'), 106);
+SELECT setval(pg_get_serial_sequence('categorias', 'cod_categoria'), 11);
+SELECT setval(pg_get_serial_sequence('fornecedores', 'cod_fornecedor'), 11);
+SELECT setval(pg_get_serial_sequence('vendedores', 'cod_vendedor'), 10);
+SELECT setval(pg_get_serial_sequence('clientes', 'cod_cliente'), 12);
+SELECT setval(pg_get_serial_sequence('produtos', 'cod_produto'), 16);
+SELECT setval(pg_get_serial_sequence('vendas', 'numero_venda'), 106);

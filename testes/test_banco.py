@@ -30,11 +30,18 @@ def valor_da_venda(numero_venda):
     return db.consultar_valor(sql, {'numero_venda': numero_venda})
 
 
+def test_testes_usam_o_esquema_de_testes():
+    esquemas = db.ler_esquemas()
+
+    assert db.consultar_valor('SELECT current_schema()') == esquemas['testes']
+    assert esquemas['testes'] != esquemas['sistema']
+
+
 def test_oito_tabelas_com_datas_controladas_pelo_banco():
     sql = """
         SELECT table_name, column_name, data_type, is_nullable
         FROM information_schema.columns
-        WHERE table_schema = 'loja'
+        WHERE table_schema = current_schema()
           AND column_name IN ('created_at', 'updated_at')
     """
     colunas = db.consultar(sql)
