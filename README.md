@@ -45,7 +45,7 @@ mantêm o estoque e o valor de cada venda a partir dos itens.
 
 ## Requisitos
 
-- **Python 3** (veja as combinações ensaiadas abaixo). Confira com `python --version`.
+- **Python 3.9 ou mais recente** (veja as combinações ensaiadas abaixo). Confira com `python --version`.
 - Dependências, em `requirements.txt`: Flask 3, psycopg 3 com o extra binary,
   pytest 8, python-dotenv 1 e, só no Windows, tzdata (a base de fusos horários
   que o Windows não traz e que o módulo `zoneinfo` usa para saber a data na
