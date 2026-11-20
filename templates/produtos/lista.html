@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block titulo %}{{ titulo }}{% endblock %}
+{% block conteudo %}
+<h1>{{ titulo }}</h1>
+<p class="acoes">
+  <a href="{{ url_for('produtos.novo') }}">Novo produto</a>
+  <a href="{{ url_for('produtos.lista') }}">Todos</a>
+  <a href="{{ url_for('produtos.disponiveis') }}">Disponíveis</a>
+  <a href="{{ url_for('produtos.abaixo_do_minimo') }}">Abaixo do mínimo</a>
+</p>
+<table>
+  <thead>
+    <tr>
+      <th class="numero">Código</th><th>Descrição</th><th class="numero">Preço</th>
+      <th class="numero">Estoque</th><th class="numero">Mínimo</th><th>Situação</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for produto in produtos %}
+    <tr>
+      <td class="numero">{{ produto.cod_produto }}</td>
+      <td><a href="{{ url_for('produtos.ficha', cod_produto=produto.cod_produto) }}">{{ produto.descricao }}</a></td>
+      <td class="numero">{{ produto.preco | moeda }}</td>
+      <td class="numero">{{ produto.qtd_estoque }}</td>
+      <td class="numero">{{ produto.estoque_minimo }}</td>
+      <td>
+        {% if produto.qtd_estoque < produto.estoque_minimo %}<span class="alerta">abaixo do mínimo</span>
+        {% else %}em ordem{% endif %}
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="6">Nenhum produto nesta consulta.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

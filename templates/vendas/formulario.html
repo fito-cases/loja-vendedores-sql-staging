@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block titulo %}Nova venda{% endblock %}
+{% block conteudo %}
+<h1>Abrir venda</h1>
+<p>A venda começa sem itens e com valor zero; os itens são incluídos na ficha da venda.</p>
+<form class="campos" method="post" action="{{ url_for('vendas.abrir') }}">
+  <label for="cod_cliente">Cliente</label>
+  <select id="cod_cliente" name="cod_cliente" required>
+    <option value="">— escolha o cliente —</option>
+    {% for cliente in clientes %}
+    <option value="{{ cliente.cod_cliente }}" {% if (dados.cod_cliente | string) == (cliente.cod_cliente | string) %}selected{% endif %}>{{ cliente.nome }} — {{ cliente.bairro }}, {{ cliente.cidade }} (cliente {{ cliente.cod_cliente }})</option>
+    {% endfor %}
+  </select>
+  <label for="cod_vendedor">Vendedor</label>
+  <select id="cod_vendedor" name="cod_vendedor">
+    <option value="">— sem vendedor identificado —</option>
+    {% for vendedor in vendedores %}
+    <option value="{{ vendedor.cod_vendedor }}" {% if (dados.cod_vendedor | string) == (vendedor.cod_vendedor | string) %}selected{% endif %}>{{ vendedor.rotulo }}</option>
+    {% endfor %}
+  </select>
+  <label for="data_venda">Data da venda</label>
+  <input id="data_venda" name="data_venda" type="date" required value="{{ dados.data_venda or '' }}">
+  <button type="submit">Abrir venda</button>
+</form>
+<p><a href="{{ url_for('vendas.lista') }}">Voltar às vendas</a></p>
+{% endblock %}

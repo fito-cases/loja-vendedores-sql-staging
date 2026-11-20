@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titulo %}Início{% endblock %} · Loja</title>
+  <style>
+    body { margin: 0; font-family: system-ui, sans-serif; color: #1f2933; background: #f7f7f5; }
+    header { background: #23395b; color: #fff; padding: 0.75rem 1.5rem; }
+    header a { color: #fff; }
+    .marca { font-size: 1.3rem; font-weight: bold; text-decoration: none; }
+    nav { display: flex; flex-wrap: wrap; gap: 0.5rem 2rem; margin-top: 0.5rem; }
+    nav .area strong { margin-right: 0.5rem; }
+    nav .area a { margin-right: 0.75rem; }
+    main { max-width: 64rem; margin: 0 auto; padding: 1rem 1.5rem 3rem; }
+    table { border-collapse: collapse; width: 100%; background: #fff; margin: 0.75rem 0; }
+    th, td { border: 1px solid #d5d9de; padding: 0.4rem 0.6rem; text-align: left; }
+    th { background: #e8ecf1; }
+    td.numero, th.numero { text-align: right; }
+    form.campos { background: #fff; border: 1px solid #d5d9de; padding: 1rem; max-width: 36rem; }
+    form.campos label { display: block; margin: 0.6rem 0 0.2rem; font-weight: 600; }
+    form.campos input, form.campos select { width: 100%; padding: 0.35rem; box-sizing: border-box; }
+    form.linha { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: end; margin: 0.75rem 0; }
+    form.linha label { display: flex; flex-direction: column; font-weight: 600; }
+    form.botao { display: inline; }
+    button { margin-top: 0.8rem; padding: 0.4rem 0.9rem; cursor: pointer; }
+    form.linha button { margin-top: 0; }
+    .acoes { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; }
+    .mensagem { padding: 0.6rem 0.9rem; border-radius: 4px; }
+    .mensagem.sucesso { background: #e3f4e8; border: 1px solid #8cc79d; }
+    .mensagem.erro { background: #fbe6e6; border: 1px solid #e19a9a; }
+    .mensagem.aviso { background: #fff4d6; border: 1px solid #e3c063; }
+    .alerta { color: #a33a1a; font-weight: 600; }
+    .discreto { color: #5f6b7a; }
+    dl.ficha { display: grid; grid-template-columns: max-content 1fr; gap: 0.3rem 1rem; background: #fff; border: 1px solid #d5d9de; padding: 1rem; }
+    dl.ficha dt { font-weight: 600; }
+    dl.ficha dd { margin: 0; }
+  </style>
+</head>
+<body>
+  <header>
+    <a class="marca" href="{{ url_for('inicio') }}">Loja</a>
+    <nav>
+      <div class="area">
+        <strong>Vendas:</strong>
+        <a href="{{ url_for('vendas.lista') }}">Vendas</a>
+        <a href="{{ url_for('clientes.lista') }}">Clientes</a>
+        <a href="{{ url_for('relatorios.vendas_do_periodo') }}">Conferência por período</a>
+      </div>
+      <div class="area">
+        <strong>Administração:</strong>
+        <a href="{{ url_for('categorias.lista') }}">Categorias</a>
+        <a href="{{ url_for('produtos.lista') }}">Produtos</a>
+        <a href="{{ url_for('produtos.disponiveis') }}">Disponíveis</a>
+        <a href="{{ url_for('produtos.abaixo_do_minimo') }}">Abaixo do mínimo</a>
+        <a href="{{ url_for('fornecedores.lista') }}">Fornecedores</a>
+        <a href="{{ url_for('fornecimentos.lista') }}">Fornecimentos</a>
+        <a href="{{ url_for('vendedores.lista') }}">Vendedores</a>
+      </div>
+    </nav>
+  </header>
+  <main>
+    {% for categoria, texto in get_flashed_messages(with_categories=true) %}
+      <p class="mensagem {{ categoria }}">{{ texto }}</p>
+    {% endfor %}
+    {% if aviso %}<p class="mensagem aviso">{{ aviso }}</p>{% endif %}
+    {% if erro %}<p class="mensagem erro">{{ erro }}</p>{% endif %}
+    {% block conteudo %}{% endblock %}
+  </main>
+</body>
+</html>

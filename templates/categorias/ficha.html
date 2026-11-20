@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block titulo %}Categoria {{ categoria.cod_categoria }}{% endblock %}
+{% block conteudo %}
+<h1>Categoria {{ categoria.cod_categoria }}</h1>
+<dl class="ficha">
+  <dt>Código</dt><dd>{{ categoria.cod_categoria }}</dd>
+  <dt>Nome</dt><dd>{{ categoria.nome }}</dd>
+</dl>
+<div class="acoes">
+  <a href="{{ url_for('categorias.editar', cod_categoria=categoria.cod_categoria) }}">Editar</a>
+  <form class="botao" method="post" action="{{ url_for('categorias.excluir', cod_categoria=categoria.cod_categoria) }}">
+    <button type="submit">Excluir</button>
+  </form>
+  <a href="{{ url_for('categorias.lista') }}">Voltar à lista</a>
+</div>
+{% endblock %}

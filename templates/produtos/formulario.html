@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block titulo %}{% if cod_produto %}Editar produto{% else %}Novo produto{% endif %}{% endblock %}
+{% block conteudo %}
+{% if cod_produto %}
+<h1>Editar produto {{ cod_produto }}</h1>
+<form class="campos" method="post" action="{{ url_for('produtos.salvar', cod_produto=cod_produto) }}">
+{% else %}
+<h1>Novo produto</h1>
+<form class="campos" method="post" action="{{ url_for('produtos.incluir') }}">
+{% endif %}
+  <label for="descricao">Descrição</label>
+  <input id="descricao" name="descricao" maxlength="100" required value="{{ dados.descricao or '' }}">
+  <label for="preco">Preço (R$)</label>
+  <input id="preco" name="preco" inputmode="decimal" required value="{{ dados.preco if dados.preco is not none else '' }}">
+  <label for="qtd_estoque">Estoque</label>
+  <input id="qtd_estoque" name="qtd_estoque" type="number" min="0" required value="{{ dados.qtd_estoque if dados.qtd_estoque is not none else '' }}">
+  <label for="estoque_minimo">Estoque mínimo</label>
+  <input id="estoque_minimo" name="estoque_minimo" type="number" min="0" required value="{{ dados.estoque_minimo if dados.estoque_minimo is not none else '' }}">
+  <label for="cod_categoria">Categoria</label>
+  <select id="cod_categoria" name="cod_categoria">
+    <option value="">— sem categoria —</option>
+    {% for categoria in categorias %}
+    <option value="{{ categoria.cod_categoria }}" {% if (dados.cod_categoria | string) == (categoria.cod_categoria | string) %}selected{% endif %}>{{ categoria.nome }}</option>
+    {% endfor %}
+  </select>
+  <button type="submit">Salvar</button>
+</form>
+<p><a href="{{ url_for('produtos.lista') }}">Voltar à lista</a></p>
+{% endblock %}

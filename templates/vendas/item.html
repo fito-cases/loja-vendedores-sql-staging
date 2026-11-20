@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block titulo %}Item da venda {{ item.numero_venda }}{% endblock %}
+{% block conteudo %}
+<h1>Alterar item da venda {{ item.numero_venda }}</h1>
+<p>Mantendo o produto, só a quantidade muda e o preço praticado ({{ item.preco_unitario | moeda }}) é preservado.
+   Escolhendo outro produto, o item passa a usar o preço atual dele.</p>
+<form class="campos" method="post" action="{{ url_for('vendas.salvar_item', numero_venda=item.numero_venda, cod_produto=item.cod_produto) }}">
+  <label for="cod_produto">Produto</label>
+  <select id="cod_produto" name="cod_produto" required>
+    {% for produto in produtos %}
+    <option value="{{ produto.cod_produto }}" {% if (dados.cod_produto | string) == (produto.cod_produto | string) %}selected{% endif %}>{{ produto.descricao }} — {{ produto.preco | moeda }} ({{ produto.qtd_estoque }} em estoque)</option>
+    {% endfor %}
+  </select>
+  <label for="quantidade">Quantidade</label>
+  <input id="quantidade" name="quantidade" type="number" min="1" required value="{{ dados.quantidade or '' }}">
+  <button type="submit">Salvar item</button>
+</form>
+<p><a href="{{ url_for('vendas.ficha', numero_venda=item.numero_venda) }}">Voltar à venda</a></p>
+{% endblock %}

@@ -1,0 +1,10 @@
+[project]
+name = "loja-vendedores-sql"
+version = "1.0.0"
+description = "Loja de vestuário, acessórios e cama, mesa e banho: caso de SQL com cadastro de vendedores e relatório semanal."
+requires-python = ">=3"
+
+[tool.pytest.ini_options]
+testpaths = ["testes"]
+python_files = ["test_*.py"]
+pythonpath = ["."]

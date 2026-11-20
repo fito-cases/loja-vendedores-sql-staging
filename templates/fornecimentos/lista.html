@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block titulo %}Fornecimentos{% endblock %}
+{% block conteudo %}
+<h1>Fornecimentos</h1>
+<p>Escolha um fornecedor para ver, vincular, alterar ou remover os produtos que ele oferece.
+   Os fornecedores de cada produto também aparecem na ficha do produto.</p>
+<table>
+  <thead>
+    <tr><th class="numero">Código</th><th>Fornecedor</th><th>Cidade</th></tr>
+  </thead>
+  <tbody>
+    {% for fornecedor in fornecedores %}
+    <tr>
+      <td class="numero">{{ fornecedor.cod_fornecedor }}</td>
+      <td><a href="{{ url_for('fornecimentos.do_fornecedor', cod_fornecedor=fornecedor.cod_fornecedor) }}">{{ fornecedor.razao_social }}</a></td>
+      <td>{{ fornecedor.cidade }} / {{ fornecedor.estado }}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="3">Nenhum fornecedor cadastrado.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

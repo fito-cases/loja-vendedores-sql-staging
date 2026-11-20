@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block conteudo %}
+<h1>Loja</h1>
+<p>Vestuário, acessórios e artigos de cama, mesa e banho.</p>
+
+<h2>Área de vendas</h2>
+<ul>
+  <li><a href="{{ url_for('vendas.nova') }}">Abrir uma venda</a> ou <a href="{{ url_for('vendas.lista') }}">consultar vendas</a></li>
+  <li><a href="{{ url_for('clientes.lista') }}">Clientes</a></li>
+  <li><a href="{{ url_for('relatorios.vendas_do_periodo') }}">Conferência das vendas da semana ou de outro período</a></li>
+</ul>
+
+<h2>Área de administração</h2>
+<ul>
+  <li><a href="{{ url_for('categorias.lista') }}">Categorias</a></li>
+  <li><a href="{{ url_for('produtos.lista') }}">Produtos</a>:
+      <a href="{{ url_for('produtos.disponiveis') }}">disponíveis</a> e
+      <a href="{{ url_for('produtos.abaixo_do_minimo') }}">abaixo do estoque mínimo</a></li>
+  <li><a href="{{ url_for('fornecedores.lista') }}">Fornecedores</a></li>
+  <li><a href="{{ url_for('fornecimentos.lista') }}">Fornecimentos (fornecedores de cada produto)</a></li>
+  <li><a href="{{ url_for('vendedores.lista') }}">Vendedores</a></li>
+</ul>
+{% endblock %}

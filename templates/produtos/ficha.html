@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block titulo %}Produto {{ produto.cod_produto }}{% endblock %}
+{% block conteudo %}
+<h1>{{ produto.descricao }} <span class="discreto">(produto {{ produto.cod_produto }})</span></h1>
+<dl class="ficha">
+  <dt>Código</dt><dd>{{ produto.cod_produto }}</dd>
+  <dt>Descrição</dt><dd>{{ produto.descricao }}</dd>
+  <dt>Preço atual</dt><dd>{{ produto.preco | moeda }}</dd>
+  <dt>Estoque</dt><dd>{{ produto.qtd_estoque }}</dd>
+  <dt>Estoque mínimo</dt>
+  <dd>{{ produto.estoque_minimo }}
+    {% if produto.qtd_estoque < produto.estoque_minimo %}<span class="alerta">(abaixo do mínimo)</span>{% endif %}
+  </dd>
+  <dt>Categoria</dt><dd>{% if categoria %}{{ categoria.nome }}{% else %}sem categoria{% endif %}</dd>
+</dl>
+<div class="acoes">
+  <a href="{{ url_for('produtos.editar', cod_produto=produto.cod_produto) }}">Editar</a>
+  <form class="botao" method="post" action="{{ url_for('produtos.excluir', cod_produto=produto.cod_produto) }}">
+    <button type="submit">Excluir</button>
+  </form>
+  <a href="{{ url_for('produtos.lista') }}">Voltar à lista</a>
+</div>
+
+<h2>Fornecedores deste produto</h2>
+<ul>
+  {% for fornecedor in fornecedores %}
+  <li><a href="{{ url_for('fornecimentos.ficha', cod_fornecedor=fornecedor.cod_fornecedor, cod_produto=produto.cod_produto) }}">{{ fornecedor.razao_social }}</a></li>
+  {% else %}
+  <li>Nenhum fornecedor vinculado.</li>
+  {% endfor %}
+</ul>
+{% endblock %}

@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% block titulo %}Venda {{ venda.numero_venda }}{% endblock %}
+{% block conteudo %}
+<h1>Venda {{ venda.numero_venda }}</h1>
+<p>Valor registrado: <strong>{{ venda.valor | moeda }}</strong>
+   <span class="discreto">(calculado pelo banco a partir dos itens)</span></p>
+
+<h2>Dados da venda</h2>
+<form class="campos" method="post" action="{{ url_for('vendas.salvar_cabecalho', numero_venda=venda.numero_venda) }}">
+  <label for="cod_cliente">Cliente</label>
+  <select id="cod_cliente" name="cod_cliente" required>
+    {% for cliente in clientes %}
+    <option value="{{ cliente.cod_cliente }}" {% if (cabecalho.cod_cliente | string) == (cliente.cod_cliente | string) %}selected{% endif %}>{{ cliente.nome }} — {{ cliente.bairro }}, {{ cliente.cidade }} (cliente {{ cliente.cod_cliente }})</option>
+    {% endfor %}
+  </select>
+  <label for="cod_vendedor">Vendedor</label>
+  <select id="cod_vendedor" name="cod_vendedor">
+    <option value="">— sem vendedor identificado —</option>
+    {% for vendedor in vendedores %}
+    <option value="{{ vendedor.cod_vendedor }}" {% if (cabecalho.cod_vendedor | string) == (vendedor.cod_vendedor | string) %}selected{% endif %}>{{ vendedor.rotulo }}</option>
+    {% endfor %}
+  </select>
+  <label for="data_venda">Data da venda</label>
+  <input id="data_venda" name="data_venda" type="date" required value="{{ cabecalho.data_venda or '' }}">
+  <button type="submit">Salvar dados da venda</button>
+</form>
+
+<h2>Itens</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Produto</th><th class="numero">Quantidade</th><th class="numero">Preço unitário</th>
+      <th class="numero">Subtotal</th><th>Ações</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for item in itens %}
+    <tr>
+      <td>{{ item.descricao }} <span class="discreto">(produto {{ item.cod_produto }})</span></td>
+      <td class="numero">{{ item.quantidade }}</td>
+      <td class="numero">{{ item.preco_unitario | moeda }}</td>
+      <td class="numero">{{ item.subtotal | moeda }}</td>
+      <td class="acoes">
+        <a href="{{ url_for('vendas.editar_item', numero_venda=venda.numero_venda, cod_produto=item.cod_produto) }}">Alterar</a>
+        <form class="botao" method="post" action="{{ url_for('vendas.remover_item', numero_venda=venda.numero_venda, cod_produto=item.cod_produto) }}">
+          <button type="submit">Remover</button>
+        </form>
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="5">Nenhum item nesta venda.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<h3>Incluir item</h3>
+<form class="linha" method="post" action="{{ url_for('vendas.incluir_item', numero_venda=venda.numero_venda) }}">
+  <label>Produto
+    <select name="cod_produto" required>
+      <option value="">— escolha o produto —</option>
+      {% for produto in produtos %}
+      <option value="{{ produto.cod_produto }}" {% if (novo_item.cod_produto | string) == (produto.cod_produto | string) %}selected{% endif %}>{{ produto.descricao }} — {{ produto.preco | moeda }} ({{ produto.qtd_estoque }} em estoque)</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label>Quantidade
+    <input name="quantidade" type="number" min="1" required value="{{ novo_item.quantidade or 1 }}">
+  </label>
+  <button type="submit">Incluir</button>
+</form>
+
+<h2>Cancelar venda</h2>
+<p>Exclui a venda e seus itens; as unidades voltam ao estoque.</p>
+<form class="botao" method="post" action="{{ url_for('vendas.cancelar', numero_venda=venda.numero_venda) }}">
+  <button type="submit">Cancelar venda {{ venda.numero_venda }}</button>
+</form>
+<p><a href="{{ url_for('vendas.lista') }}">Voltar às vendas</a></p>
+{% endblock %}

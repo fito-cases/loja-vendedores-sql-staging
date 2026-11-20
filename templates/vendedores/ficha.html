@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block titulo %}Vendedor {{ cod_vendedor }}{% endblock %}
+{% block conteudo %}
+<h1>Vendedor {{ cod_vendedor }}</h1>
+{% if vendedor %}
+<dl class="ficha">
+  <dt>Código</dt><dd>{{ vendedor.cod_vendedor }}</dd>
+  <dt>Nome</dt><dd>{{ vendedor.nome }}</dd>
+  <dt>Cidade</dt><dd>{{ vendedor.cidade }}</dd>
+</dl>
+{% else %}
+<p>Ficha indisponível.</p>
+{% endif %}
+<div class="acoes">
+  <a href="{{ url_for('vendedores.editar', cod_vendedor=cod_vendedor) }}">Editar</a>
+  <form class="botao" method="post" action="{{ url_for('vendedores.excluir', cod_vendedor=cod_vendedor) }}">
+    <button type="submit">Excluir</button>
+  </form>
+  <a href="{{ url_for('vendedores.lista') }}">Voltar à lista</a>
+</div>
+{% endblock %}

@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block titulo %}Fornecimento {{ fornecimento.cod_fornecedor }}/{{ fornecimento.cod_produto }}{% endblock %}
+{% block conteudo %}
+<h1>Fornecimento</h1>
+<dl class="ficha">
+  <dt>Fornecedor</dt><dd>{{ fornecedor.razao_social }} (código {{ fornecimento.cod_fornecedor }})</dd>
+  <dt>Produto</dt><dd>{{ produto.descricao }} (código {{ fornecimento.cod_produto }})</dd>
+  <dt>Vinculado em</dt><dd>{{ fornecimento.created_at | data }}</dd>
+</dl>
+
+<h2>Alterar o vínculo</h2>
+<form class="campos" method="post" action="{{ url_for('fornecimentos.alterar', cod_fornecedor=fornecimento.cod_fornecedor, cod_produto=fornecimento.cod_produto) }}">
+  <label for="cod_fornecedor">Fornecedor</label>
+  <select id="cod_fornecedor" name="cod_fornecedor" required>
+    {% for opcao in fornecedores %}
+    <option value="{{ opcao.cod_fornecedor }}" {% if (dados.cod_fornecedor | string) == (opcao.cod_fornecedor | string) %}selected{% endif %}>{{ opcao.razao_social }}</option>
+    {% endfor %}
+  </select>
+  <label for="cod_produto">Produto</label>
+  <select id="cod_produto" name="cod_produto" required>
+    {% for opcao in produtos %}
+    <option value="{{ opcao.cod_produto }}" {% if (dados.cod_produto | string) == (opcao.cod_produto | string) %}selected{% endif %}>{{ opcao.descricao }} (produto {{ opcao.cod_produto }})</option>
+    {% endfor %}
+  </select>
+  <button type="submit">Salvar alteração</button>
+</form>
+
+<div class="acoes">
+  <form class="botao" method="post" action="{{ url_for('fornecimentos.excluir', cod_fornecedor=fornecimento.cod_fornecedor, cod_produto=fornecimento.cod_produto) }}">
+    <button type="submit">Remover vínculo</button>
+  </form>
+  <a href="{{ url_for('fornecimentos.do_fornecedor', cod_fornecedor=fornecimento.cod_fornecedor) }}">Voltar aos produtos do fornecedor</a>
+</div>
+{% endblock %}

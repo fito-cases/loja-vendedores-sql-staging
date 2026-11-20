@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block titulo %}Vendedores{% endblock %}
+{% block conteudo %}
+<h1>Vendedores</h1>
+<p><a href="{{ url_for('vendedores.novo') }}">Novo vendedor</a></p>
+<table>
+  <thead>
+    <tr><th class="numero">Código</th><th>Nome</th><th>Cidade</th></tr>
+  </thead>
+  <tbody>
+    {% if vendedores is none %}
+    <tr><td colspan="3">Lista indisponível.</td></tr>
+    {% else %}
+      {% for vendedor in vendedores %}
+      <tr>
+        <td class="numero">{{ vendedor.cod_vendedor }}</td>
+        <td><a href="{{ url_for('vendedores.ficha', cod_vendedor=vendedor.cod_vendedor) }}">{{ vendedor.nome }}</a></td>
+        <td>{{ vendedor.cidade }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="3">Nenhum vendedor cadastrado.</td></tr>
+      {% endfor %}
+    {% endif %}
+  </tbody>
+</table>
+{% endblock %}

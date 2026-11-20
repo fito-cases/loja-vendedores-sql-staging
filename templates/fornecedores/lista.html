@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block titulo %}Fornecedores{% endblock %}
+{% block conteudo %}
+<h1>Fornecedores</h1>
+<p><a href="{{ url_for('fornecedores.novo') }}">Novo fornecedor</a></p>
+<table>
+  <thead>
+    <tr><th class="numero">Código</th><th>Razão social</th><th>Cidade</th><th>Estado</th></tr>
+  </thead>
+  <tbody>
+    {% for fornecedor in fornecedores %}
+    <tr>
+      <td class="numero">{{ fornecedor.cod_fornecedor }}</td>
+      <td><a href="{{ url_for('fornecedores.ficha', cod_fornecedor=fornecedor.cod_fornecedor) }}">{{ fornecedor.razao_social }}</a></td>
+      <td>{{ fornecedor.cidade }}</td>
+      <td>{{ fornecedor.estado }}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="4">Nenhum fornecedor cadastrado.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block titulo %}Cliente {{ cliente.cod_cliente }}{% endblock %}
+{% block conteudo %}
+<h1>{{ cliente.nome }} <span class="discreto">(cliente {{ cliente.cod_cliente }})</span></h1>
+<dl class="ficha">
+  <dt>Código</dt><dd>{{ cliente.cod_cliente }}</dd>
+  <dt>Nome</dt><dd>{{ cliente.nome }}</dd>
+  <dt>Endereço</dt><dd>{{ cliente.rua_numero }} — {{ cliente.bairro }}</dd>
+  <dt>Cidade</dt><dd>{{ cliente.cidade }} / {{ cliente.estado }}</dd>
+  <dt>CEP</dt><dd>{{ cliente.cep }}</dd>
+  <dt>Telefone</dt><dd>{{ cliente.telefone or 'não informado' }}</dd>
+</dl>
+<div class="acoes">
+  <a href="{{ url_for('vendas.nova', cod_cliente=cliente.cod_cliente) }}">Abrir venda para este cliente</a>
+  <a href="{{ url_for('clientes.editar', cod_cliente=cliente.cod_cliente) }}">Editar</a>
+  <form class="botao" method="post" action="{{ url_for('clientes.excluir', cod_cliente=cliente.cod_cliente) }}">
+    <button type="submit">Excluir</button>
+  </form>
+  <a href="{{ url_for('clientes.lista') }}">Voltar à lista</a>
+</div>
+
+<h2>Compras deste cliente</h2>
+<table>
+  <thead>
+    <tr><th class="numero">Venda</th><th>Data</th><th class="numero">Valor</th></tr>
+  </thead>
+  <tbody>
+    {% for compra in compras %}
+    <tr>
+      <td class="numero"><a href="{{ url_for('vendas.ficha', numero_venda=compra.numero_venda) }}">{{ compra.numero_venda }}</a></td>
+      <td>{{ compra.data_venda | data }}</td>
+      <td class="numero">{{ compra.valor | moeda }}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="3">Nenhuma compra registrada.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

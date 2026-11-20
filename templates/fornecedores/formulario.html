@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block titulo %}{% if cod_fornecedor %}Editar fornecedor{% else %}Novo fornecedor{% endif %}{% endblock %}
+{% block conteudo %}
+{% if cod_fornecedor %}
+<h1>Editar fornecedor {{ cod_fornecedor }}</h1>
+<form class="campos" method="post" action="{{ url_for('fornecedores.salvar', cod_fornecedor=cod_fornecedor) }}">
+{% else %}
+<h1>Novo fornecedor</h1>
+<form class="campos" method="post" action="{{ url_for('fornecedores.incluir') }}">
+{% endif %}
+  <label for="razao_social">Razão social</label>
+  <input id="razao_social" name="razao_social" maxlength="100" required value="{{ dados.razao_social or '' }}">
+  <label for="cidade">Cidade</label>
+  <input id="cidade" name="cidade" maxlength="70" required value="{{ dados.cidade or '' }}">
+  <label for="estado">Estado (sigla)</label>
+  <input id="estado" name="estado" maxlength="2" required value="{{ dados.estado or '' }}">
+  <button type="submit">Salvar</button>
+</form>
+<p><a href="{{ url_for('fornecedores.lista') }}">Voltar à lista</a></p>
+{% endblock %}

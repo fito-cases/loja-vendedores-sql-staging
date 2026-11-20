@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block titulo %}Clientes{% endblock %}
+{% block conteudo %}
+<h1>Clientes</h1>
+<p><a href="{{ url_for('clientes.novo') }}">Novo cliente</a></p>
+<table>
+  <thead>
+    <tr><th class="numero">Código</th><th>Nome</th><th>Bairro</th><th>Cidade</th><th>Telefone</th></tr>
+  </thead>
+  <tbody>
+    {% for cliente in clientes %}
+    <tr>
+      <td class="numero">{{ cliente.cod_cliente }}</td>
+      <td><a href="{{ url_for('clientes.ficha', cod_cliente=cliente.cod_cliente) }}">{{ cliente.nome }}</a></td>
+      <td>{{ cliente.bairro }}</td>
+      <td>{{ cliente.cidade }}</td>
+      <td>{{ cliente.telefone or '—' }}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="5">Nenhum cliente cadastrado.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

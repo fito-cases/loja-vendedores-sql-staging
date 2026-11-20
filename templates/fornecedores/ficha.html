@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block titulo %}Fornecedor {{ fornecedor.cod_fornecedor }}{% endblock %}
+{% block conteudo %}
+<h1>{{ fornecedor.razao_social }} <span class="discreto">(fornecedor {{ fornecedor.cod_fornecedor }})</span></h1>
+<dl class="ficha">
+  <dt>Código</dt><dd>{{ fornecedor.cod_fornecedor }}</dd>
+  <dt>Razão social</dt><dd>{{ fornecedor.razao_social }}</dd>
+  <dt>Cidade</dt><dd>{{ fornecedor.cidade }} / {{ fornecedor.estado }}</dd>
+</dl>
+<div class="acoes">
+  <a href="{{ url_for('fornecedores.editar', cod_fornecedor=fornecedor.cod_fornecedor) }}">Editar</a>
+  <form class="botao" method="post" action="{{ url_for('fornecedores.excluir', cod_fornecedor=fornecedor.cod_fornecedor) }}">
+    <button type="submit">Excluir</button>
+  </form>
+  <a href="{{ url_for('fornecedores.lista') }}">Voltar à lista</a>
+</div>
+
+<h2>Produtos fornecidos</h2>
+<ul>
+  {% for produto in produtos %}
+  <li>{{ produto.descricao }} <span class="discreto">(produto {{ produto.cod_produto }})</span></li>
+  {% else %}
+  <li>Nenhum produto vinculado.</li>
+  {% endfor %}
+</ul>
+<p><a href="{{ url_for('fornecimentos.do_fornecedor', cod_fornecedor=fornecedor.cod_fornecedor) }}">Gerenciar produtos deste fornecedor</a></p>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block titulo %}{% if cod_cliente %}Editar cliente{% else %}Novo cliente{% endif %}{% endblock %}
+{% block conteudo %}
+{% if cod_cliente %}
+<h1>Editar cliente {{ cod_cliente }}</h1>
+<form class="campos" method="post" action="{{ url_for('clientes.salvar', cod_cliente=cod_cliente) }}">
+{% else %}
+<h1>Novo cliente</h1>
+<form class="campos" method="post" action="{{ url_for('clientes.incluir') }}">
+{% endif %}
+  <label for="nome">Nome</label>
+  <input id="nome" name="nome" maxlength="100" required value="{{ dados.nome or '' }}">
+  <label for="rua_numero">Rua e número</label>
+  <input id="rua_numero" name="rua_numero" maxlength="70" required value="{{ dados.rua_numero or '' }}">
+  <label for="bairro">Bairro</label>
+  <input id="bairro" name="bairro" maxlength="70" required value="{{ dados.bairro or '' }}">
+  <label for="cidade">Cidade</label>
+  <input id="cidade" name="cidade" maxlength="70" required value="{{ dados.cidade or '' }}">
+  <label for="estado">Estado (sigla)</label>
+  <input id="estado" name="estado" maxlength="2" required value="{{ dados.estado or '' }}">
+  <label for="cep">CEP</label>
+  <input id="cep" name="cep" maxlength="10" required value="{{ dados.cep or '' }}">
+  <label for="telefone">Telefone (opcional)</label>
+  <input id="telefone" name="telefone" maxlength="20" value="{{ dados.telefone or '' }}">
+  <button type="submit">Salvar</button>
+</form>
+<p><a href="{{ url_for('clientes.lista') }}">Voltar à lista</a></p>
+{% endblock %}
