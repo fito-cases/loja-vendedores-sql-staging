@@ -47,7 +47,9 @@ mantêm o estoque e o valor de cada venda a partir dos itens.
 
 - **Python 3** (veja as combinações ensaiadas abaixo). Confira com `python --version`.
 - Dependências, em `requirements.txt`: Flask 3, psycopg 3 com o extra binary,
-  pytest 8 e python-dotenv 1.
+  pytest 8, python-dotenv 1 e, só no Windows, tzdata (a base de fusos horários
+  que o Windows não traz e que o módulo `zoneinfo` usa para saber a data na
+  loja).
 - **Um projeto Supabase exclusivo do seu grupo**, sem dados reais. O serviço
   usa PostgreSQL 17. Não é preciso instalar PostgreSQL no computador.
 
@@ -111,9 +113,22 @@ aviso de operação indisponível; as demais funcionam normalmente.
 
 ## Testes
 
+Para rodar todos os testes:
+
 ```bash
 python -m pytest -q
 ```
+
+Durante a atividade, rode só o arquivo em que estiver trabalhando, o que é bem
+mais rápido. Por exemplo, para o cadastro de vendedores:
+
+```bash
+python -m pytest -q testes/test_vendedores.py
+```
+
+Qualquer outro arquivo da pasta `testes/` pode ser executado da mesma forma,
+individualmente (por exemplo, `testes/test_relatorios.py`). Deixe a suíte
+completa para a conferência final.
 
 - Os testes usam **só** o esquema `ESQUEMA_TESTES`: rodar os testes não apaga
   o que foi feito pelas telas, que fica em `ESQUEMA_SISTEMA`.
@@ -135,23 +150,21 @@ python -m pytest -q
 ## Combinações ensaiadas na preparação do caso
 
 Instalação com `python -m pip install -r requirements.txt` e suíte com
-`python -m pytest -q`, em Linux (Ubuntu 24.04 no WSL2):
+`python -m pytest -q`:
 
-| Python | Versões resolvidas | Banco | Resultado |
-|---|---|---|---|
-| 3.12.3 | Flask 3.1.3, psycopg 3.3.9, pytest 8.4.2, python-dotenv 1.2.4 | Supabase, PostgreSQL 17.11 (Session pooler, TLS) | instala e executa |
-| 3.9.25 | Flask 3.1.3, psycopg 3.2.13, pytest 8.4.2, python-dotenv 1.2.1 | PostgreSQL 17.12 descartável, só na preparação | instala e executa |
-| 3.10.20, 3.13.12, 3.14.3 | Flask 3.1.3, psycopg 3.3.9, pytest 8.4.2, python-dotenv 1.2.4 | PostgreSQL 17.12 descartável, só na preparação | instala e executa |
-| 3.8.20 | Flask 3.0.3, psycopg 3.2.13, pytest 8.3.5, python-dotenv 1.0.1 | — | instala, mas **não executa**: falta o módulo `zoneinfo` (Python 3.9 ou mais recente) |
+| Sistema | Python | Versões resolvidas | Banco | Resultado |
+|---|---|---|---|---|
+| Windows 11 (build 22635) | 3.10.4 | Flask 3.1.3, psycopg 3.3.9, pytest 8.4.2, python-dotenv 1.2.4, tzdata 2026.6 | Supabase, PostgreSQL 17.11 (Session pooler, TLS) | instala e executa |
+| Linux (Ubuntu 24.04 no WSL2) | 3.12.3, 3.14.3 | Flask 3.1.3, psycopg 3.3.9, pytest 8.4.2, python-dotenv 1.2.4 | Supabase, PostgreSQL 17.11 (Session pooler, TLS) | instala e executa |
+| Linux (Ubuntu 24.04 no WSL2) | 3.9.25 | Flask 3.1.3, psycopg 3.2.13, pytest 8.4.2, python-dotenv 1.2.1 | PostgreSQL 17.12 descartável, só na preparação | instala e executa |
+| Linux (Ubuntu 24.04 no WSL2) | 3.10.20, 3.13.12 | Flask 3.1.3, psycopg 3.3.9, pytest 8.4.2, python-dotenv 1.2.4 | PostgreSQL 17.12 descartável, só na preparação | instala e executa |
+| Linux (Ubuntu 24.04 no WSL2) | 3.8.20 | Flask 3.0.3, psycopg 3.2.13, pytest 8.3.5, python-dotenv 1.0.1 | — | instala, mas **não executa**: falta o módulo `zoneinfo` (Python 3.9 ou mais recente) |
 
-Windows e macOS não foram ensaiados.
+macOS não foi ensaiado.
 
 ## Limitações conhecidas
 
 - **Python 3.8 ou anterior:** sem suporte (veja a tabela). Versões futuras do
   Python dependem de as dependências publicarem pacotes compatíveis.
-- **Fuso horário no Windows:** o Python no Windows não traz a base de fusos.
-  Se a página da conferência mostrar erro e o terminal citar `FUSO_LOJA`,
-  instale a base com `python -m pip install tzdata`.
 - O projeto não gera pedidos de compra, pagamentos, notas fiscais nem
   relatórios estatísticos.

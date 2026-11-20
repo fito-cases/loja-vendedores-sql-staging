@@ -18,7 +18,8 @@ def hoje_na_loja():
         fuso = ZoneInfo(nome_do_fuso)
     except ZoneInfoNotFoundError:
         raise RuntimeError(
-            f'Fuso horário "{nome_do_fuso}" não encontrado. Confira FUSO_LOJA no .env; '
-            'no Windows, instale a base de fusos com: python -m pip install tzdata'
+            f'Fuso horário "{nome_do_fuso}" não encontrado. Confira FUSO_LOJA no .env '
+            'e se as dependências foram instaladas com: '
+            'python -m pip install -r requirements.txt (no Windows, elas incluem tzdata)'
         ) from None
     return datetime.datetime.now(fuso).date()
