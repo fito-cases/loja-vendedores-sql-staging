@@ -1,1 +1,15 @@
-artifacts: []
+artifacts:
+  - {path: repositorios/vendedores.py, role: target, description: 'Operações de cadastro usadas pela administração.'}
+  - {path: repositorios/relatorios.py, role: target, description: 'Consulta que atende à conferência de vendas por período.'}
+  - {path: testes/test_vendedores.py, role: evidence, description: 'Quatro verificações do cadastro e da identidade dos vendedores.'}
+  - {path: testes/test_relatorios.py, role: evidence, description: 'Três verificações dos comprovantes exibidos em períodos conhecidos.'}
+  - {path: testes/test_telas.py, role: evidence, description: 'Comportamento esperado das páginas e dos formulários.'}
+  - {path: repositorios/categorias.py, role: reference, description: 'Exemplo de repositório completo da administração.'}
+  - {path: db.py, role: reference, description: 'Interface de acesso ao banco compartilhada pelos repositórios.'}
+  - {path: README.md, role: reference, description: 'Preparação do ambiente e execução da aplicação e dos testes.'}
+  - {path: rotas/vendedores.py, role: scaffold, description: 'Integração do cadastro com a interface administrativa.'}
+  - {path: rotas/relatorios.py, role: scaffold, description: 'Integração do filtro de período com a interface de vendas.'}
+  - {path: templates/relatorios/periodo.html, role: scaffold, description: 'Apresentação do período e dos comprovantes na página do relatório.'}
+  - {path: sql/schema.sql, role: do-not-touch, description: 'Estrutura e regras de integridade da loja.'}
+  - {path: sql/dados.sql, role: do-not-touch, description: 'Dados iniciais usados nas verificações.'}
+  - {path: testes/conftest.py, role: do-not-touch, description: 'Preparação compartilhada da base de testes.'}
