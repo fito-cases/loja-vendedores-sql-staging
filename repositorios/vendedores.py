@@ -59,3 +59,5 @@ def excluir_vendedor(cod_vendedor):
     """
     # TODO: escrever o comando SQL e executá-lo com a função adequada de db.py.
     raise NotImplementedError('excluir_vendedor ainda não foi implementada.')
+
+# teste do laboratorio 1
