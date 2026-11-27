@@ -61,3 +61,4 @@ def excluir_vendedor(cod_vendedor):
     raise NotImplementedError('excluir_vendedor ainda não foi implementada.')
 
 # teste do laboratorio 1
+# teste do laboratorio 2
